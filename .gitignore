@@ -1,0 +1,16 @@
+# Backend
+backend/node_modules/
+backend/uploads/
+
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Environment
+.env
