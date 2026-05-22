@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white antialiased;
+    color: #111111;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: #111111;
+    color: #ffffff;
+  }
+  .btn-primary:hover {
+    background-color: #1f1f1f;
+  }
+  .btn-primary:active {
+    background-color: #2e2e2e;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed bg-white border;
+    color: #2e2e2e;
+    border-color: #d0d0d0;
+  }
+  .btn-secondary:hover {
+    background-color: #f5f5f5;
+  }
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 text-white;
+  }
+  .btn-danger:hover {
+    @apply bg-red-700;
+  }
+  .input {
+    @apply w-full px-3 py-2 rounded text-sm bg-white transition-colors;
+    border: 1px solid #d0d0d0;
+    outline: none;
+  }
+  .input:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 1px #111111;
+  }
+  .label {
+    @apply block text-sm font-medium mb-1;
+    color: #2e2e2e;
+  }
+  .card {
+    @apply bg-white rounded;
+    border: 1px solid #e8e8e8;
+  }
+  .table-header {
+    @apply text-xs font-semibold uppercase tracking-wider;
+    background-color: #f5f5f5;
+    color: #525252;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+  .badge-green {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+    background-color: #f5f5f5;
+    color: #2e2e2e;
+    border: 1px solid #d0d0d0;
+  }
+  .badge-red {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700;
+    border: 1px solid #fecaca;
+  }
+  .badge-yellow {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+    background-color: #f5f5f5;
+    color: #3d3d3d;
+    border: 1px solid #d0d0d0;
+  }
+  .badge-blue {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+    background-color: #f5f5f5;
+    color: #2e2e2e;
+    border: 1px solid #d0d0d0;
+  }
+  .badge-gray {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+    background-color: #f5f5f5;
+    color: #525252;
+    border: 1px solid #e8e8e8;
+  }
+  .slip-template {
+    color: #111111;
+  }
+  .slip-template .header {
+    text-align: center;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .slip-template table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+  .slip-template td, .slip-template th {
+    padding: 6px 10px;
+    border: 1px solid #e8e8e8;
+    font-size: 13px;
+  }
+  .slip-template th {
+    background: #f5f5f5;
+    text-align: left;
+  }
+  .slip-template .total-row td {
+    font-weight: bold;
+    background: #f5f5f5;
+  }
+  .slip-template .section {
+    margin: 10px 0;
+    font-size: 12px;
+    color: #525252;
+  }
+}
