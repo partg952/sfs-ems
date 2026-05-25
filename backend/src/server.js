@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { config } from './config.js'
 import { initDB } from './db.js'
+import authRoutes from './routes/auth.js'
 
 const app = express()
 
@@ -11,6 +12,12 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Healthcheck
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
+})
+
+// API Routes
+app.use('/api/auth', authRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
 })
