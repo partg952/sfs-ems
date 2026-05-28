@@ -58,3 +58,5 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
+// Token expiration auto-logout logic enabled
