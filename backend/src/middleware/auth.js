@@ -32,5 +32,3 @@ export function requireRoles(...allowedRoles) {
     next()
   }
 }
-
-// Enhanced error detail on expired JWT
