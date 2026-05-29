@@ -3,11 +3,12 @@ import { Plus } from '@untitledui/icons'
 import { getShifts, createShift, assignShift, recordOvertime, getOvertimeByMonth } from '../../api/shifts'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
 import Modal from '../../components/Modal'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import EmptyState from '../../components/EmptyState'
+import EmployeeSelect from '../../components/EmployeeSelect'
 import { formatCurrency, MONTHS } from '../../utils/format'
 import toast from 'react-hot-toast'
 
@@ -148,20 +149,32 @@ export default function ShiftsPage() {
                   <th className="px-4 py-3 text-right">Hours</th>
                   <th className="px-4 py-3 text-right">Rate/hr</th>
                   <th className="px-4 py-3 text-right">Amount</th>
+                  <th className="px-4 py-3 text-center">Source</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-50">
-                {overtime.map(o => (
-                  <tr key={o.id} className="hover:bg-brand-50">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-brand-900">{o.employeeName}</p>
-                      <p className="text-xs text-brand-400">{o.employeeCode}</p>
-                    </td>
-                    <td className="px-4 py-3 text-right">{o.hours}</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(o.rate)}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-brand-900">{formatCurrency(o.amount)}</td>
-                  </tr>
-                ))}
+                {overtime.map(o => {
+                  const needsRate = Number(o.rate) === 0 && Number(o.hours) > 0
+                  return (
+                    <tr key={o.id} className={`hover:bg-brand-50 ${needsRate ? 'bg-amber-50' : ''}`}>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-brand-900">{o.employeeName}</p>
+                        <p className="text-xs text-brand-400">{o.employeeCode}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right">{o.hours}</td>
+                      <td className="px-4 py-3 text-right">
+                        {formatCurrency(o.rate)}
+                        {needsRate && <span className="block text-[10px] text-amber-600 font-normal">Set rate below</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-brand-900">{formatCurrency(o.amount)}</td>
+                      <td className="px-4 py-3 text-center">
+                        {needsRate
+                          ? <span className="badge-blue" title="Hours auto-synced from an attendance punch-file upload - set the hourly rate to calculate pay">Auto-synced</span>
+                          : <span className="badge-gray">Manual</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -203,10 +216,14 @@ export default function ShiftsPage() {
           <form onSubmit={assignForm.handleSubmit(onAssign)} className="space-y-4">
             <div>
               <label className="label">Employee *</label>
-              <select {...assignForm.register('employeeId', { required: true })} className="input">
-                <option value="">Select employee</option>
-                {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>)}
-              </select>
+              <Controller
+                name="employeeId"
+                control={assignForm.control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EmployeeSelect employees={employees} value={field.value} onChange={field.onChange} />
+                )}
+              />
             </div>
             <div>
               <label className="label">Shift *</label>
@@ -235,10 +252,28 @@ export default function ShiftsPage() {
             <p className="text-xs text-brand-400">For {MONTHS[month-1]} {year} — change the period above before opening this form if needed.</p>
             <div>
               <label className="label">Employee *</label>
-              <select {...overtimeForm.register('employeeId', { required: true })} className="input">
-                <option value="">Select employee</option>
-                {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>)}
-              </select>
+              <Controller
+                name="employeeId"
+                control={overtimeForm.control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EmployeeSelect
+                    employees={employees}
+                    value={field.value}
+                    onChange={(empId) => {
+                      field.onChange(empId)
+                      const existing = overtime.find(o => String(o.employeeId) === String(empId))
+                      if (existing) {
+                        overtimeForm.setValue('hours', existing.hours)
+                        if (Number(existing.rate) > 0) overtimeForm.setValue('rate', existing.rate)
+                      }
+                    }}
+                  />
+                )}
+              />
+              <p className="text-xs text-brand-400 mt-1">
+                Selecting an employee with hours already synced from an attendance upload will pre-fill them below - adjust if needed.
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
