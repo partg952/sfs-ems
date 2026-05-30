@@ -20,6 +20,7 @@ import shiftRoutes from './routes/shifts.js'
 import overtimeRoutes from './routes/overtime.js'
 import selfRoutes from './routes/self.js'
 import aiRoutes from './routes/ai.js'
+import attendanceReportRoutes from './routes/attendanceReports.js'
 
 const app = express()
 
@@ -54,6 +55,7 @@ app.use('/api/shifts', shiftRoutes)
 app.use('/api/overtime', overtimeRoutes)
 app.use('/api/self', selfRoutes)
 app.use('/api/ai', aiRoutes)
+app.use('/api/attendance-reports', attendanceReportRoutes)
 
 // Error Handler
 app.use((err, req, res, next) => {
