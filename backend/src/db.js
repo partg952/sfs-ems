@@ -67,6 +67,33 @@ export async function initDB() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS status_history (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        old_status VARCHAR(50),
+        new_status VARCHAR(50) NOT NULL,
+        remark TEXT,
+        changed_at TIMESTAMP DEFAULT NOW(),
+        changed_by VARCHAR(100)
+      );
+
+      CREATE TABLE IF NOT EXISTS employment_history (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        old_site_id INTEGER,
+        new_site_id INTEGER,
+        old_designation VARCHAR(100),
+        new_designation VARCHAR(100),
+        old_daily_wage NUMERIC(10,2),
+        new_daily_wage NUMERIC(10,2),
+        old_monthly_wage NUMERIC(10,2),
+        new_monthly_wage NUMERIC(10,2),
+        effective_date DATE NOT NULL,
+        remark TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        created_by VARCHAR(100)
+      );
+
       CREATE TABLE IF NOT EXISTS app_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
