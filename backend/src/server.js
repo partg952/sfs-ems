@@ -3,6 +3,9 @@ import cors from 'cors'
 import { config } from './config.js'
 import { initDB } from './db.js'
 import authRoutes from './routes/auth.js'
+import employeeRoutes from './routes/employees.js'
+import path from 'path'
+import fs from 'fs'
 
 const app = express()
 
@@ -17,7 +20,13 @@ app.get('/api/health', (req, res) => {
 })
 
 // API Routes
+if (!fs.existsSync(config.uploadDir)) {
+  fs.mkdirSync(config.uploadDir, { recursive: true })
+}
+app.use('/uploads', express.static(path.resolve(config.uploadDir)))
+
 app.use('/api/auth', authRoutes)
+app.use('/api/employees', employeeRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
 })
