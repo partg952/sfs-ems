@@ -15,6 +15,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { authenticateJWT, requireRoles } from '../middleware/auth.js'
+import { query } from '../db.js'
 import { generateEthnicReport, sumTotals } from '../services/ethnicReportService.js'
 import { generateProductReport } from '../services/productReportService.js'
 import { generateProductShiftReport, sumSiteTotals } from '../services/productShiftReportService.js'
@@ -25,6 +26,10 @@ import {
 import {
   renderEthnicPdf, renderProductPdf, renderProductShiftPdf, renderMusterRollPdf, PDFDocument,
 } from '../services/attendancePdfExport.js'
+import {
+  syncPunchEntriesToEms,
+  extractFromEthnic, extractFromProduct, extractFromProductShift, extractFromMusterRoll,
+} from '../services/employeeSyncService.js'
 
 const router = Router()
 router.use(authenticateJWT)
@@ -77,6 +82,17 @@ router.post('/ethnic/preview', requireRoles(...REPORT_ACCESS), upload.single('fi
     const result = generateEthnicReport(req.file.buffer, year, month, selectedEmpIds)
     reportCache.set(cacheKey(req, 'ethnic'), result)
 
+    // Auto-sync: match/auto-create employees+sites from the punch file and
+    // push their computed attendance days into the EMS (does not touch
+    // finalized payroll_records - manual entry stays fully intact).
+    let employeeSync
+    try {
+      const entries = extractFromEthnic(result)
+      employeeSync = await syncPunchEntriesToEms(entries, month, year, 'ethnic', req.user.username, req.file.buffer)
+    } catch (syncErr) {
+      employeeSync = { error: syncErr.message }
+    }
+
     const grand8 = sumTotals(result.sites, result.dataFor8Hour)
     const grand9 = sumTotals(result.sites, result.dataFor9Hour)
 
@@ -98,6 +114,7 @@ router.post('/ethnic/preview', requireRoles(...REPORT_ACCESS), upload.single('fi
         grandTotals: { shift8: grand8, shift9: grand9 },
         dataFor8Hour: result.dataFor8Hour,
         dataFor9Hour: result.dataFor9Hour,
+        employeeSync,
       },
     })
   } catch (err) {
@@ -157,6 +174,14 @@ router.post('/product/preview', requireRoles(...REPORT_ACCESS), upload.single('f
     const result = generateProductReport(req.file.buffer, year, month)
     reportCache.set(cacheKey(req, 'product'), result)
 
+    let employeeSync
+    try {
+      const entries = extractFromProduct(result)
+      employeeSync = await syncPunchEntriesToEms(entries, month, year, 'product', req.user.username, req.file.buffer)
+    } catch (syncErr) {
+      employeeSync = { error: syncErr.message }
+    }
+
     const siteBreakdown = result.sites.map((site) => {
       const siteData = result.allSitesCalculatedData[site]
       return {
@@ -177,6 +202,7 @@ router.post('/product/preview', requireRoles(...REPORT_ACCESS), upload.single('f
         sites: result.sites,
         siteBreakdown,
         consolidated: result.consolidated,
+        employeeSync,
       },
     })
   } catch (err) {
@@ -233,6 +259,14 @@ router.post('/product-shift/preview', requireRoles(...REPORT_ACCESS), upload.sin
     const result = generateProductShiftReport(req.file.buffer, year, month)
     reportCache.set(cacheKey(req, 'product-shift'), result)
 
+    let employeeSync
+    try {
+      const entries = extractFromProductShift(result)
+      employeeSync = await syncPunchEntriesToEms(entries, month, year, 'product-shift', req.user.username, req.file.buffer)
+    } catch (syncErr) {
+      employeeSync = { error: syncErr.message }
+    }
+
     function summarize(shiftData) {
       const grand = sumSiteTotals(shiftData.sites, shiftData.siteTotals)
       const siteBreakdown = shiftData.sites.map((site) => ({
@@ -255,6 +289,7 @@ router.post('/product-shift/preview', requireRoles(...REPORT_ACCESS), upload.sin
         sites: result.shift8.sites,
         shift8: shift8Summary,
         shift9: shift9Summary,
+        employeeSync,
       },
     })
   } catch (err) {
@@ -316,6 +351,14 @@ router.post('/muster-roll/preview', requireRoles(...REPORT_ACCESS), upload.singl
     const result = generateMusterRoll(req.file.buffer, year, month)
     reportCache.set(cacheKey(req, 'muster-roll'), result)
 
+    let employeeSync
+    try {
+      const entries = extractFromMusterRoll(result)
+      employeeSync = await syncPunchEntriesToEms(entries, month, year, 'muster-roll', req.user.username, req.file.buffer)
+    } catch (syncErr) {
+      employeeSync = { error: syncErr.message }
+    }
+
     const siteBreakdown = result.sites.map((site) => {
       const siteData = result.allSitesCalculatedData[site]
       return {
@@ -337,6 +380,7 @@ router.post('/muster-roll/preview', requireRoles(...REPORT_ACCESS), upload.singl
         daysInMonth: result.daysInMonth,
         siteBreakdown,
         allSitesCalculatedData: result.allSitesCalculatedData,
+        employeeSync,
       },
     })
   } catch (err) {
@@ -459,6 +503,126 @@ router.get('/downloads', requireRoles(...REPORT_ACCESS), async (req, res) => {
   }
 
   res.json({ success: true, message: 'Success', data: artifacts })
+})
+
+// ---------------------------------------------------------------------------
+// WORKFORCE ANOMALY INSIGHTS
+//
+// Aggregates real signals already computed by the attendance sync pipeline
+// (attendance_days + overtime_records, populated by employeeSyncService
+// whenever a punch file is uploaded) into a small set of headline anomaly
+// counts for the Attendance Reports landing page - turning the raw
+// per-employee data every report already produces into an at-a-glance
+// "what needs HR's attention" view, plus a month-by-month trend for the
+// chart. Nothing here is hardcoded to a specific site/month/employee -
+// every figure is derived live from whatever data currently exists.
+// ---------------------------------------------------------------------------
+
+// GET /api/attendance-reports/insights?months=6
+router.get('/insights', requireRoles(...REPORT_ACCESS), async (req, res) => {
+  const monthsBack = parseInt(req.query.months, 10) || 6
+
+  try {
+    // Low attendance: less than 75% of the standard 26-day working month
+    // (< 19.5 days), matching the "attendance consistency" risk factor
+    // threshold already used by the AI Workforce Insights module.
+    const lowAttendance = await query(`
+      SELECT ad.employee_id, e.name, e.employee_code, ad.month, ad.year, ad.days
+      FROM attendance_days ad
+      JOIN employees e ON e.id = ad.employee_id
+      WHERE ad.days < 19.5 AND e.status = 'ACTIVE'
+      ORDER BY ad.year DESC, ad.month DESC, ad.days ASC
+      LIMIT 10
+    `)
+
+    // Overtime violations: over the 40h/month statutory threshold.
+    const overtimeViolations = await query(`
+      SELECT o.employee_id, e.name, e.employee_code, o.month, o.year, o.hours
+      FROM overtime_records o
+      JOIN employees e ON e.id = o.employee_id
+      WHERE o.hours > 40 AND e.status = 'ACTIVE'
+      ORDER BY o.hours DESC
+      LIMIT 10
+    `)
+
+    // Half-day occurrences: a fractional (.5) attendance-days figure means
+    // at least one half-duty day was recorded for that employee/period.
+    const halfDayCount = await query(`
+      SELECT count(*) FROM attendance_days WHERE days::text LIKE '%.5'
+    `)
+
+    // Employees auto-marked LEFT by the sync pipeline in the current
+    // calendar month AND still actually LEFT right now (filters out stale
+    // audit history for anyone who was later reverted/REJOINED, so this
+    // only ever reflects the employee's real current status).
+    const recentAutoLeft = await query(`
+      SELECT DISTINCT ON (sh.employee_id) sh.employee_id, e.name, e.employee_code, sh.changed_at, sh.remark
+      FROM status_history sh
+      JOIN employees e ON e.id = sh.employee_id
+      WHERE sh.new_status = 'LEFT' AND sh.remark LIKE 'Auto-marked LEFT%'
+        AND e.status = 'LEFT'
+        AND sh.changed_at >= NOW() - INTERVAL '${monthsBack} months'
+      ORDER BY sh.employee_id, sh.changed_at DESC
+      LIMIT 10
+    `)
+
+    // Month-by-month trend for the chart: average attendance days and
+    // total overtime hours per period, across however many periods of
+    // real data exist (capped to the requested window).
+    const trend = await query(`
+      SELECT
+        ad.month, ad.year,
+        ROUND(AVG(ad.days), 1) as "avgAttendanceDays",
+        COUNT(DISTINCT ad.employee_id) as "employeeCount"
+      FROM attendance_days ad
+      GROUP BY ad.month, ad.year
+      ORDER BY ad.year DESC, ad.month DESC
+      LIMIT ${monthsBack}
+    `)
+    const otTrend = await query(`
+      SELECT month, year, ROUND(SUM(hours), 1) as "totalOvertimeHours"
+      FROM overtime_records
+      GROUP BY month, year
+      ORDER BY year DESC, month DESC
+      LIMIT ${monthsBack}
+    `)
+    const otByPeriod = new Map(otTrend.rows.map((r) => [`${r.month}-${r.year}`, parseFloat(r.totalOvertimeHours) || 0]))
+    const monthlyTrend = trend.rows.map((r) => ({
+      month: r.month,
+      year: r.year,
+      avgAttendanceDays: parseFloat(r.avgAttendanceDays) || 0,
+      employeeCount: parseInt(r.employeeCount, 10),
+      totalOvertimeHours: otByPeriod.get(`${r.month}-${r.year}`) || 0,
+    })).reverse()
+
+    res.json({
+      success: true,
+      message: 'Success',
+      data: {
+        summary: {
+          lowAttendanceCount: lowAttendance.rows.length,
+          overtimeViolationCount: overtimeViolations.rows.length,
+          halfDayCount: parseInt(halfDayCount.rows[0].count, 10),
+          autoLeftCount: recentAutoLeft.rows.length,
+        },
+        lowAttendance: lowAttendance.rows.map((r) => ({
+          employeeId: r.employee_id, name: r.name, employeeCode: r.employee_code,
+          month: r.month, year: r.year, days: parseFloat(r.days),
+        })),
+        overtimeViolations: overtimeViolations.rows.map((r) => ({
+          employeeId: r.employee_id, name: r.name, employeeCode: r.employee_code,
+          month: r.month, year: r.year, hours: parseFloat(r.hours),
+        })),
+        recentAutoLeft: recentAutoLeft.rows.map((r) => ({
+          employeeId: r.employee_id, name: r.name, employeeCode: r.employee_code,
+          changedAt: r.changed_at, remark: r.remark,
+        })),
+        monthlyTrend,
+      },
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message, data: null })
+  }
 })
 
 export default router
