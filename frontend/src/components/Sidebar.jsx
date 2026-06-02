@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutGrid, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutGrid, Users, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid },
+  { to: '/employees', label: 'Employees', icon: Users },
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {

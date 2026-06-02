@@ -5,11 +5,17 @@ import Layout from './components/Layout'
 
 import LoginPage from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
+import EmployeeList from './pages/employees/EmployeeList'
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/employees" element={
+        <ProtectedRoute>
+          <Layout><EmployeeList /></Layout>
+        </ProtectedRoute>
+      } />
       <Route path="/" element={
         <ProtectedRoute>
           <Layout><Dashboard /></Layout>
