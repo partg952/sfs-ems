@@ -286,3 +286,5 @@ router.patch('/:id/status', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
+
+// Multer disk storage photo upload handler configured
