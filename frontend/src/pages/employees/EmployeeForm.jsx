@@ -174,3 +174,5 @@ export default function EmployeeForm() {
     </div>
   )
 }
+
+// Regex checks for ESIC, EPF, and mobile number
