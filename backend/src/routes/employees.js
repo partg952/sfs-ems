@@ -286,5 +286,3 @@ router.patch('/:id/status', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
-
-// Wage and designation revision audit logging
