@@ -135,5 +135,3 @@ export default function EmployeeList() {
     </div>
   )
 }
-
-// Status badge styling refined
