@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, File02, Clipboard } from '@untitledui/icons'
-import { getPayrollByMonth, processPayroll } from '../../api/payroll'
+import { Play, File02, Clipboard, CheckCircle } from '@untitledui/icons'
+import { getPayrollByMonth, processPayroll, markPayrollPaid } from '../../api/payroll'
 import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/PageHeader'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -36,8 +36,23 @@ export default function PayrollPage() {
     } catch {/* handled */} finally { setProcessing(false) }
   }
 
+  const [markingPaidId, setMarkingPaidId] = useState(null)
+  const handleMarkPaid = async (id) => {
+    setMarkingPaidId(id)
+    try {
+      await markPayrollPaid(id)
+      toast.success('Marked as paid')
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to mark as paid')
+    } finally {
+      setMarkingPaidId(null)
+    }
+  }
+
   const totalNet   = records.reduce((s, r) => s + (r.netSalary   ?? 0), 0)
   const totalGross = records.reduce((s, r) => s + (r.grossSalary ?? 0), 0)
+  const unsetWageCount = records.filter(r => r.grossSalary === 0 && r.attendanceDays > 0).length
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
   return (
@@ -87,6 +102,13 @@ export default function PayrollPage() {
         </div>
       )}
 
+      {unsetWageCount > 0 && (
+        <div className="card p-3 mb-5 border-l-4 border-l-amber-500 text-sm text-amber-800 bg-amber-50">
+          {unsetWageCount} employee(s) have attendance but no Daily Wage or Monthly Wage set, so their gross pay shows ₹0.00.
+          Open each employee's profile and set their Daily Wage in Employee Hub to calculate real pay.
+        </div>
+      )}
+
       {loading ? <LoadingSpinner /> : records.length === 0 ? (
         <EmptyState
           title="No payroll records"
@@ -121,11 +143,18 @@ export default function PayrollPage() {
                 {records.map(r => (
                   <tr key={r.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-brand-900">{r.employeeName}</p>
+                      <Link to={`/employees/${r.employeeId}`} className="font-medium text-brand-900 hover:underline">{r.employeeName}</Link>
                       <p className="text-xs text-brand-400">{r.employeeCode}</p>
                     </td>
                     <td className="px-4 py-3 text-center">{r.attendanceDays ?? '—'}</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(r.grossSalary)}</td>
+                    <td className="px-4 py-3 text-right">
+                      {formatCurrency(r.grossSalary)}
+                      {r.grossSalary === 0 && r.attendanceDays > 0 && (
+                        <span className="block text-[10px] text-amber-600 font-normal" title="Neither Daily Wage nor Monthly Wage is set for this employee - set one in Employee Hub to calculate real gross pay">
+                          Wage not set
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right">{formatCurrency(r.overtimeEarning)}</td>
                     <td className="px-4 py-3 text-right text-red-600">{formatCurrency(r.esicDeduction)}</td>
                     <td className="px-4 py-3 text-right text-red-600">{formatCurrency(r.epfDeduction)}</td>
@@ -135,6 +164,15 @@ export default function PayrollPage() {
                     <td className="px-4 py-3 text-right font-semibold text-brand-900">{formatCurrency(r.netSalary)}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={payrollStatusBadge(r.status)}>{r.status}</span>
+                      {r.status === 'PROCESSED' && canWrite() && (
+                        <button
+                          onClick={() => handleMarkPaid(r.id)}
+                          disabled={markingPaidId === r.id}
+                          className="mt-1 flex items-center gap-1 justify-center text-xs text-brand-600 hover:text-brand-900 mx-auto"
+                        >
+                          <CheckCircle size={12} /> {markingPaidId === r.id ? 'Marking...' : 'Mark Paid'}
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Link

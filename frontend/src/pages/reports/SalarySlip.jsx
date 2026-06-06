@@ -32,7 +32,7 @@ export default function SalarySlip() {
     ]).then(([sR, eR, hR]) => {
       setSlip(sR.data?.data)
       setEmp(eR.data?.data)
-      setSlipHtml(hR?.data?.data ?? null)
+      setSlipHtml(hR?.data ?? null)
     }).finally(() => setLoading(false))
   }, [employeeId, month, year])
 
