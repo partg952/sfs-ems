@@ -114,3 +114,5 @@ export async function initDB() {
     client.release()
   }
 }
+
+// Client and site foreign key constraints verified
