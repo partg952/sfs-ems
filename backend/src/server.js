@@ -4,6 +4,8 @@ import { config } from './config.js'
 import { initDB } from './db.js'
 import authRoutes from './routes/auth.js'
 import employeeRoutes from './routes/employees.js'
+import clientRoutes from './routes/clients.js'
+import siteRoutes from './routes/sites.js'
 import path from 'path'
 import fs from 'fs'
 
@@ -27,6 +29,8 @@ app.use('/uploads', express.static(path.resolve(config.uploadDir)))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/employees', employeeRoutes)
+app.use('/api/clients', clientRoutes)
+app.use('/api/sites', siteRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
 })
