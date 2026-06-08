@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import EmployeeList from './pages/employees/EmployeeList'
 import EmployeeProfile from './pages/employees/EmployeeProfile'
 import EmployeeForm from './pages/employees/EmployeeForm'
+import ClientsPage from './pages/clients/ClientsPage'
 
 function AppRoutes() {
   return (
@@ -26,6 +27,11 @@ function AppRoutes() {
       <Route path="/employees/:id/edit" element={
         <ProtectedRoute>
           <Layout><EmployeeForm /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/clients" element={
+        <ProtectedRoute>
+          <Layout><ClientsPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/employees" element={
