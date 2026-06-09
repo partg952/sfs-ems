@@ -94,6 +94,29 @@ export async function initDB() {
         created_by VARCHAR(100)
       );
 
+      CREATE TABLE IF NOT EXISTS room_allotments (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        room_number VARCHAR(50) NOT NULL,
+        monthly_rent NUMERIC(10,2) DEFAULT 0,
+        allotment_date DATE NOT NULL,
+        vacated_date DATE,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS uniform_allotments (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        shirt_size VARCHAR(10),
+        pant_size VARCHAR(10),
+        shoe_size VARCHAR(10),
+        allotment_date DATE NOT NULL,
+        returned_date DATE,
+        is_returned BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS app_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
@@ -114,5 +137,3 @@ export async function initDB() {
     client.release()
   }
 }
-
-// Client and site foreign key constraints verified
