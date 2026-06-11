@@ -132,3 +132,5 @@ router.patch('/uniforms/employee/:employeeId/return', requireRoles(...HR_WRITE),
 })
 
 export default router
+
+// Shoe sizing and uniform return tracking condition
