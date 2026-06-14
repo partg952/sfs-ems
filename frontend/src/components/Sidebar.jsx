@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
-  Users, LayoutGrid, Wallet, BookText,
-  Building, Shield, FileBarChart, LogOut,
-  PanelLeftClose, PanelLeftOpen, Briefcase,
-  CalendarDays, MessageSquareWarning, Clock,
-  FileText, Brain
-} from 'lucide-react'
+  Users01, Grid01, Wallet01, BookOpen01,
+  Building07, Shield01, BarChart01, LogOut01,
+  LayoutLeft, Briefcase01,
+  Calendar, MessageChatCircle, Clock,
+  File02, Stars01, File04
+} from '@untitledui/icons'
 import clsx from 'clsx'
 
 // roles:null means "any authenticated role" — every entry here must
@@ -15,25 +15,26 @@ import clsx from 'clsx'
 const ALL_HR_ROLES = ['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS','VIEWER']
 
 const navItems = [
-  { to: '/',           label: 'Dashboard',   icon: LayoutGrid,          roles: ALL_HR_ROLES },
-  { to: '/ai-insights',label: 'Insights',    icon: Brain,               roles: ALL_HR_ROLES },
-  { to: '/employees',  label: 'Employees',   icon: Users,               roles: ALL_HR_ROLES },
-  { to: '/payroll',    label: 'Payroll',     icon: Wallet,              roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS'] },
-  { to: '/ledger',     label: 'Ledger',      icon: BookText,            roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
-  { to: '/assets',     label: 'Assets',      icon: Building,            roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
-  { to: '/clients',    label: 'Clients',     icon: Briefcase,           roles: ALL_HR_ROLES },
-  { to: '/leave',      label: 'Leave',       icon: CalendarDays,        roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
-  { to: '/grievances', label: 'Grievances',  icon: MessageSquareWarning,roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
+  { to: '/',           label: 'Dashboard',   icon: Grid01,              roles: ALL_HR_ROLES },
+  { to: '/ai-insights',label: 'Insights',    icon: Stars01,             roles: ALL_HR_ROLES },
+  { to: '/employees',  label: 'Employees',   icon: Users01,             roles: ALL_HR_ROLES },
+  { to: '/payroll',    label: 'Payroll',     icon: Wallet01,            roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS'] },
+  { to: '/attendance-reports', label: 'Attendance Reports', icon: File04, roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS'] },
+  { to: '/ledger',     label: 'Ledger',      icon: BookOpen01,          roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
+  { to: '/assets',     label: 'Assets',      icon: Building07,          roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
+  { to: '/clients',    label: 'Clients',     icon: Briefcase01,         roles: ALL_HR_ROLES },
+  { to: '/leave',      label: 'Leave',       icon: Calendar,            roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
+  { to: '/grievances', label: 'Grievances',  icon: MessageChatCircle,   roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF'] },
   { to: '/shifts',     label: 'Shifts',      icon: Clock,               roles: ['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS'] },
-  { to: '/reports',    label: 'Reports',     icon: FileBarChart,        roles: ['SUPER_ADMIN','HR_MANAGER','ACCOUNTS'] },
-  { to: '/admin',      label: 'Admin',       icon: Shield,              roles: ['SUPER_ADMIN'] },
+  { to: '/reports',    label: 'Reports',     icon: BarChart01,          roles: ['SUPER_ADMIN','HR_MANAGER','ACCOUNTS'] },
+  { to: '/admin',      label: 'Admin',       icon: Shield01,            roles: ['SUPER_ADMIN'] },
 ]
 
 const selfNavItems = [
-  { to: '/',               label: 'My Dashboard',  icon: LayoutGrid },
-  { to: '/self/payslips',  label: 'My Payslips',   icon: FileText },
-  { to: '/self/leave',     label: 'My Leave',      icon: CalendarDays },
-  { to: '/self/grievances',label: 'My Grievances', icon: MessageSquareWarning },
+  { to: '/',               label: 'My Dashboard',  icon: Grid01 },
+  { to: '/self/payslips',  label: 'My Payslips',   icon: File02 },
+  { to: '/self/leave',     label: 'My Leave',      icon: Calendar },
+  { to: '/self/grievances',label: 'My Grievances', icon: MessageChatCircle },
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -43,34 +44,41 @@ export default function Sidebar({ collapsed, onToggle }) {
   return (
     <aside
       className={clsx(
-        'min-h-screen bg-brand-900 flex flex-col transition-all duration-200',
-        collapsed ? 'w-16' : 'w-60'
+        'min-h-[calc(100vh-1.5rem)] bg-brand-900 rounded-2xl flex flex-col transition-all duration-200 flex-shrink-0 shadow-sm',
+        collapsed ? 'w-20' : 'w-64'
       )}
     >
-      {/* Logo / Brand */}
-      <div className="flex items-center gap-3 px-3 py-4 border-b border-brand-800">
-        <img src="/favicon.png" alt="Logo" className="w-8 h-8 flex-shrink-0 rounded" />
+      {/* Logo / Brand - click to expand when collapsed; collapse button shown when expanded */}
+      <div className={clsx('flex items-center gap-2 px-4 py-5', collapsed && 'justify-center px-2')}>
+        <button
+          onClick={collapsed ? onToggle : undefined}
+          title={collapsed ? 'Expand sidebar' : undefined}
+          className={clsx(
+            'flex items-center gap-3 min-w-0 rounded-lg',
+            collapsed ? 'p-1 hover:bg-white/[0.08] transition-colors' : 'flex-1 cursor-default'
+          )}
+        >
+          <img src="/favicon.png" alt="Logo" className="w-8 h-8 flex-shrink-0 rounded-lg" />
+          {!collapsed && (
+            <div className="min-w-0 text-left">
+              <p className="text-white font-semibold text-sm leading-tight truncate">Shreeji Facility</p>
+              <p className="text-brand-400 text-[10px] uppercase tracking-wider">Services</p>
+            </div>
+          )}
+        </button>
         {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-white font-semibold text-sm leading-tight truncate">Shreeji Facility</p>
-            <p className="text-brand-400 text-[10px] uppercase tracking-wider">Services</p>
-          </div>
+          <button
+            onClick={onToggle}
+            title="Collapse sidebar"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-brand-400 hover:text-white hover:bg-white/[0.08] transition-colors flex-shrink-0"
+          >
+            <LayoutLeft className="size-[17px]" strokeWidth={1.75} />
+          </button>
         )}
       </div>
 
-      {/* Collapse toggle */}
-      <div className="px-3 py-2 border-b border-brand-800">
-        <button
-          onClick={onToggle}
-          className="w-full flex items-center justify-center p-1.5 rounded text-brand-400 hover:text-white hover:bg-brand-800 transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-        </button>
-      </div>
-
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 space-y-0.5">
+      <nav className={clsx('flex-1 py-2 space-y-0.5 overflow-y-auto', collapsed ? 'px-2' : 'px-3')}>
         {items.map(({ to, label, icon: Icon, roles }) => {
           if (roles && !roles.includes(user?.role)) return null
           return (
@@ -81,38 +89,50 @@ export default function Sidebar({ collapsed, onToggle }) {
               title={collapsed ? label : undefined}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center gap-3 px-2.5 py-2 rounded text-sm font-medium transition-colors',
-                  collapsed && 'justify-center',
+                  'group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-150',
+                  collapsed && 'justify-center px-0',
                   isActive
-                    ? 'bg-white text-brand-900'
-                    : 'text-brand-300 hover:bg-brand-800 hover:text-white'
+                    ? 'bg-white text-brand-900 shadow-[0_1px_2px_rgba(0,0,0,0.15)]'
+                    : 'text-brand-300 hover:bg-white/[0.07] hover:text-white'
                 )
               }
             >
-              <Icon size={18} className="flex-shrink-0" />
-              {!collapsed && <span>{label}</span>}
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className={clsx('size-[19px] flex-shrink-0', isActive ? 'text-brand-900' : 'text-brand-400 group-hover:text-white')}
+                    strokeWidth={isActive ? 2 : 1.75}
+                  />
+                  {!collapsed && <span className="truncate">{label}</span>}
+                </>
+              )}
             </NavLink>
           )
         })}
       </nav>
 
       {/* User footer */}
-      <div className="px-2 py-3 border-t border-brand-800">
+      <div className={clsx('pt-2 pb-4 border-t border-white/[0.08] mt-2', collapsed ? 'px-2' : 'px-3')}>
         {!collapsed && (
-          <div className="px-2.5 mb-2">
-            <p className="text-white text-sm font-medium truncate">{user?.fullName}</p>
-            <p className="text-brand-400 text-xs">{user?.role?.replace(/_/g, ' ')}</p>
+          <div className="flex items-center gap-2.5 px-3.5 py-3">
+            <div className="w-8 h-8 rounded-full bg-white/10 text-white font-semibold flex items-center justify-center text-[11px] flex-shrink-0 ring-2 ring-white/10">
+              {(user?.fullName || user?.username || '?').split(' ').map((p) => p.charAt(0)).slice(0, 2).join('').toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white text-sm font-medium truncate">{user?.fullName}</p>
+              <p className="text-brand-400 text-[11px] mt-0.5">{user?.role?.replace(/_/g, ' ')}</p>
+            </div>
           </div>
         )}
         <button
           onClick={logout}
           title="Sign out"
           className={clsx(
-            'flex items-center gap-2 w-full px-2.5 py-2 rounded text-sm text-brand-300 hover:bg-brand-800 hover:text-white transition-colors',
-            collapsed && 'justify-center'
+            'group flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-[13.5px] font-medium text-brand-300 hover:bg-white/[0.07] hover:text-white transition-all duration-150',
+            collapsed && 'justify-center px-0'
           )}
         >
-          <LogOut size={16} className="flex-shrink-0" />
+          <LogOut01 className="size-[18px] flex-shrink-0 text-brand-400 group-hover:text-white" strokeWidth={1.75} />
           {!collapsed && <span>Sign out</span>}
         </button>
       </div>
