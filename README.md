@@ -5,3 +5,7 @@ An enterprise-grade, full-stack Employee Management System built for manpower st
 
 ## Module: Employee Hub
 Centralized record of guards, status transitions, and wage histories.
+
+
+## Module: Assets & Deployment Sites
+Tracking room allotments, monthly rent deductions, and uniform distribution.

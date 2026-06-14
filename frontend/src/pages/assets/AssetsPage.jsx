@@ -267,7 +267,3 @@ export default function AssetsPage() {
     </div>
   )
 }
-
-// Room vacancy counter updated upon room checkout
-
-// Polished allotment cards
