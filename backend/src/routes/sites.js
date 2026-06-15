@@ -37,7 +37,7 @@ router.put('/:id', requireRoles(...HR_WRITE), async (req, res) => {
   try {
     const result = await query(`
       UPDATE sites SET
-        name = $1, address = $2, supervisor_name = $3, supervisor_phone = $4, updated_at = NOW()
+        name = COALESCE($1, name), address = $2, supervisor_name = $3, supervisor_phone = $4, updated_at = NOW()
       WHERE id = $5 RETURNING *
     `, [b.name, b.address, b.supervisorName, b.supervisorPhone, req.params.id])
     res.json({ success: true, message: 'Site updated', data: result.rows[0] })
