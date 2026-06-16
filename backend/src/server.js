@@ -7,6 +7,7 @@ import employeeRoutes from './routes/employees.js'
 import clientRoutes from './routes/clients.js'
 import siteRoutes from './routes/sites.js'
 import assetRoutes from './routes/assets.js'
+import shiftRoutes from './routes/shifts.js'
 import path from 'path'
 import fs from 'fs'
 
@@ -33,6 +34,7 @@ app.use('/api/employees', employeeRoutes)
 app.use('/api/clients', clientRoutes)
 app.use('/api/sites', siteRoutes)
 app.use('/api/assets', assetRoutes)
+app.use('/api/shifts', shiftRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
 })
