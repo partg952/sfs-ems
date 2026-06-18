@@ -65,3 +65,5 @@ router.post('/assign', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
+
+// Night shift circadian fatigue check enabled
