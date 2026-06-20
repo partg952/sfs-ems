@@ -262,3 +262,5 @@ export default function ShiftsPage() {
     </div>
   )
 }
+
+// Site filter in assignment modal
