@@ -66,7 +66,3 @@ router.post('/', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
-
-// Overtime rate calculation multiplier
-
-// Monthly OT validation threshold

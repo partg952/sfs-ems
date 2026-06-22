@@ -65,3 +65,5 @@ router.post('/assign', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
+
+// Joined employee roster query verified
