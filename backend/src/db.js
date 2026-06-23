@@ -148,6 +148,29 @@ export async function initDB() {
         UNIQUE (employee_id, month, year)
       );
 
+      CREATE TABLE IF NOT EXISTS advances (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        amount NUMERIC(10,2) NOT NULL,
+        reason TEXT,
+        request_date DATE NOT NULL,
+        approved_by VARCHAR(100),
+        status VARCHAR(50) DEFAULT 'APPROVED' NOT NULL,
+        remaining_balance NUMERIC(10,2),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS fines (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        amount NUMERIC(10,2) NOT NULL,
+        reason TEXT,
+        fine_date DATE NOT NULL,
+        imposed_by VARCHAR(100),
+        status VARCHAR(50) DEFAULT 'IMPOSED' NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS app_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
