@@ -12,6 +12,7 @@ import ClientsPage from './pages/clients/ClientsPage'
 import AssetsPage from './pages/assets/AssetsPage'
 import ShiftsPage from './pages/shifts/ShiftsPage'
 import LedgerPage from './pages/ledger/LedgerPage'
+import AdvancePage from './pages/ledger/AdvancePage'
 
 function AppRoutes() {
   return (
@@ -30,6 +31,11 @@ function AppRoutes() {
       <Route path="/employees/:id/edit" element={
         <ProtectedRoute>
           <Layout><EmployeeForm /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ledger/advances" element={
+        <ProtectedRoute>
+          <Layout><AdvancePage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/ledger" element={
