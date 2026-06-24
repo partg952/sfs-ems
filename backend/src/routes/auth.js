@@ -78,4 +78,42 @@ router.get('/me', authenticateJWT, async (req, res) => {
   }
 })
 
+// POST /api/auth/refresh
+// Issues a fresh 24h token while the current one is still valid, so a user
+// actively working in the app never hits a hard session expiry mid-task.
+// The frontend calls this periodically in the background while the tab is
+// active; if the current token has already expired, this correctly 401s
+// like any other authenticated endpoint (authenticateJWT already rejects
+// it), and the user is prompted to log in again - only genuinely inactive/
+// expired sessions ever require a real re-login.
+router.post('/refresh', authenticateJWT, async (req, res) => {
+  try {
+    const userRes = await query('SELECT * FROM app_users WHERE username = $1 AND is_active = true', [req.user.username])
+    if (userRes.rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'Account no longer active', data: null })
+    }
+    const user = userRes.rows[0]
+
+    const token = jwt.sign(
+      { sub: user.username, role: user.role, employeeId: user.employee_id },
+      config.jwtSecret,
+      { expiresIn: '24h' }
+    )
+
+    res.json({
+      success: true,
+      message: 'Token refreshed',
+      data: {
+        token,
+        username: user.username,
+        fullName: user.full_name,
+        role: user.role,
+        employeeId: user.employee_id,
+      },
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message, data: null })
+  }
+})
+
 export default router
