@@ -13,6 +13,7 @@ import AssetsPage from './pages/assets/AssetsPage'
 import ShiftsPage from './pages/shifts/ShiftsPage'
 import LedgerPage from './pages/ledger/LedgerPage'
 import AdvancePage from './pages/ledger/AdvancePage'
+import FinePage from './pages/ledger/FinePage'
 
 function AppRoutes() {
   return (
@@ -36,6 +37,11 @@ function AppRoutes() {
       <Route path="/ledger/advances" element={
         <ProtectedRoute>
           <Layout><AdvancePage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ledger/fines" element={
+        <ProtectedRoute>
+          <Layout><FinePage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/ledger" element={
