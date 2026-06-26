@@ -171,3 +171,5 @@ export default function AdvancePage() {
     </div>
   )
 }
+
+// Status badge for fully recovered advances
