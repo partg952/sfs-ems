@@ -142,5 +142,3 @@ router.get('/fines/employee/:employeeId', requireRoles(...HR_WRITE), async (req,
 })
 
 export default router
-
-// Advance repayment schedule and remaining balance calculator
