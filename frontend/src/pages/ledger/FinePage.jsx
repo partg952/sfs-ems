@@ -132,3 +132,5 @@ export default function FinePage() {
     </div>
   )
 }
+
+// Disciplinary violation category presets
