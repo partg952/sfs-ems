@@ -3,11 +3,12 @@ import { Plus, CheckCircle } from '@untitledui/icons'
 import { getAllAdvances, createAdvance, markAdvanceRecovered } from '../../api/ledger'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
 import Modal from '../../components/Modal'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import EmptyState from '../../components/EmptyState'
+import EmployeeSelect from '../../components/EmployeeSelect'
 import { formatCurrency, formatDate } from '../../utils/format'
 import toast from 'react-hot-toast'
 
@@ -18,7 +19,7 @@ export default function AdvancePage() {
   const [loading,   setLoading]   = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [filter,    setFilter]    = useState('ALL')
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm()
 
   const load = () => {
     setLoading(true)
@@ -147,12 +148,18 @@ export default function AdvancePage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="label">Employee *</label>
-              <select {...register('employeeId', { required: true })} className="input">
-                <option value="">Select employee</option>
-                {employees.filter(e => e.status === 'ACTIVE').map(e => (
-                  <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>
-                ))}
-              </select>
+              <Controller
+                name="employeeId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EmployeeSelect
+                    employees={employees.filter(e => e.status === 'ACTIVE')}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </div>
             <div>
               <label className="label">Amount (Rs.) *</label>
