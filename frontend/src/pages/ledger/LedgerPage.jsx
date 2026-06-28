@@ -94,5 +94,3 @@ export default function LedgerPage() {
     </div>
   )
 }
-
-// Indian Rupee currency formatting with commas
