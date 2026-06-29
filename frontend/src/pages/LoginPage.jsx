@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from '@untitledui/icons'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
@@ -26,13 +26,13 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo & branding */}
         <div className="text-center mb-8">
-          <img src="/favicon.png" alt="Logo" className="w-14 h-14 mx-auto mb-4 rounded" />
-          <h1 className="text-xl font-semibold text-white">Shreeji Facility Services</h1>
+          <img src="/favicon.png" alt="Logo" className="w-14 h-14 mx-auto mb-4 rounded-lg shadow-lg" />
+          <h1 className="text-xl font-semibold text-white tracking-tight">Shreeji Facility Services</h1>
           <p className="text-brand-400 text-sm mt-1">Employee Management System</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded p-6">
+        <div className="bg-white rounded-xl p-7 shadow-xl shadow-black/20">
           <h2 className="text-base font-semibold text-brand-900 mb-5">Sign in</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
@@ -59,7 +59,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-700 transition-colors"
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -67,11 +67,15 @@ export default function LoginPage() {
               {errors.password && <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="btn-primary w-full justify-center py-2.5">
+            <button type="submit" disabled={isSubmitting} className="btn-primary w-full justify-center py-2.5 mt-2">
               {isSubmitting ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
         </div>
+
+        <p className="text-center text-brand-500 text-xs mt-6">
+          &copy; {new Date().getFullYear()} Shreeji Facility Services. All rights reserved.
+        </p>
       </div>
     </div>
   )
