@@ -173,3 +173,5 @@ export default function AdvancePage() {
 }
 
 // Status badge for fully recovered advances
+
+// Aggregated summary KPI refresh

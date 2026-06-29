@@ -142,5 +142,3 @@ router.get('/fines/employee/:employeeId', requireRoles(...HR_WRITE), async (req,
 })
 
 export default router
-
-// Validation strictly requiring positive advance and fine amounts
