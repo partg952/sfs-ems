@@ -171,6 +171,39 @@ export async function initDB() {
         created_at TIMESTAMP DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS attendance (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        month INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        days_present INTEGER NOT NULL DEFAULT 0,
+        working_days INTEGER NOT NULL DEFAULT 26,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (employee_id, month, year)
+      );
+
+      CREATE TABLE IF NOT EXISTS payroll_records (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        month INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        attendance_days INTEGER NOT NULL,
+        daily_wage NUMERIC(10,2) NOT NULL,
+        earned_wage NUMERIC(10,2) NOT NULL,
+        overtime_pay NUMERIC(10,2) DEFAULT 0,
+        gross_salary NUMERIC(10,2) NOT NULL,
+        esic_amount NUMERIC(10,2) DEFAULT 0,
+        epf_amount NUMERIC(10,2) DEFAULT 0,
+        advance_deduction NUMERIC(10,2) DEFAULT 0,
+        fine_deduction NUMERIC(10,2) DEFAULT 0,
+        room_rent_deduction NUMERIC(10,2) DEFAULT 0,
+        total_deductions NUMERIC(10,2) NOT NULL,
+        net_salary NUMERIC(10,2) NOT NULL,
+        is_paid BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (employee_id, month, year)
+      );
+
       CREATE TABLE IF NOT EXISTS app_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
