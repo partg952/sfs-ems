@@ -15,6 +15,7 @@ import LedgerPage from './pages/ledger/LedgerPage'
 import AdvancePage from './pages/ledger/AdvancePage'
 import FinePage from './pages/ledger/FinePage'
 import AttendancePage from './pages/payroll/AttendancePage'
+import PayrollPage from './pages/payroll/PayrollPage'
 
 function AppRoutes() {
   return (
@@ -43,6 +44,11 @@ function AppRoutes() {
       <Route path="/ledger/fines" element={
         <ProtectedRoute>
           <Layout><FinePage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/payroll" element={
+        <ProtectedRoute>
+          <Layout><PayrollPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/payroll/attendance" element={
