@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, ToggleLeft, ToggleRight, Edit } from 'lucide-react'
+import { Plus, Toggle01Left, Toggle01Right, Edit01 } from '@untitledui/icons'
 import { getUsers, createUser, updateUser, toggleUser, getSlipTemplate, updateSlipTemplate } from '../../api/admin'
 import { getEmployees } from '../../api/employees'
 import { useForm } from 'react-hook-form'
@@ -171,7 +171,7 @@ export default function AdminPage() {
                 <tr key={u.id} className="hover:bg-brand-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-semibold flex items-center justify-center text-xs">
+                      <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-semibold flex items-center justify-center text-xs ring-2 ring-white shadow-sm">
                         {u.fullName.charAt(0)}
                       </div>
                       <span className="font-medium text-brand-900">{u.fullName}</span>
@@ -190,11 +190,11 @@ export default function AdminPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-3">
                       <button onClick={() => openEdit(u)} className="text-brand-600 hover:text-brand-900">
-                        <Edit size={15} />
+                        <Edit01 size={15} />
                       </button>
                       <button onClick={() => handleToggle(u.id)}
                         className={u.isActive ? 'text-red-500 hover:text-red-700' : 'text-brand-600 hover:text-brand-900'}>
-                        {u.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                        {u.isActive ? <Toggle01Right size={18} /> : <Toggle01Left size={18} />}
                       </button>
                     </div>
                   </td>
