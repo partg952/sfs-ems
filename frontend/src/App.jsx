@@ -16,6 +16,8 @@ import AdvancePage from './pages/ledger/AdvancePage'
 import FinePage from './pages/ledger/FinePage'
 import AttendancePage from './pages/payroll/AttendancePage'
 import PayrollPage from './pages/payroll/PayrollPage'
+import ReportsPage from './pages/reports/ReportsPage'
+import SalarySlip from './pages/reports/SalarySlip'
 
 function AppRoutes() {
   return (
@@ -49,6 +51,16 @@ function AppRoutes() {
       <Route path="/payroll" element={
         <ProtectedRoute>
           <Layout><PayrollPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/reports" element={
+        <ProtectedRoute>
+          <Layout><ReportsPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/reports/slip/:employeeId/:month/:year" element={
+        <ProtectedRoute>
+          <Layout><SalarySlip /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/payroll/attendance" element={

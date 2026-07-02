@@ -11,6 +11,7 @@ const navItems = [
   { to: '/assets', label: 'Assets', icon: Building },
   { to: '/clients', label: 'Clients', icon: Briefcase },
   { to: '/shifts', label: 'Shifts', icon: Clock },
+  { to: '/reports', label: 'Reports', icon: FileBarChart },
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {
