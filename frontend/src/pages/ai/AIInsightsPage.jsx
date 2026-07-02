@@ -5,27 +5,27 @@ import StatCard from '../../components/StatCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import AIMarkdownMemo from '../../components/AIMarkdownMemo'
 import {
-  Brain,
-  Sparkles,
+  CpuChip01,
+  Stars01,
   AlertTriangle,
-  TrendingDown,
-  TrendingUp,
+  TrendDown02,
+  TrendUp02,
   Activity,
-  ShieldAlert,
+  ShieldOff,
   Zap,
-  Sliders,
-  CheckCircle2,
-  MessageSquareWarning,
-  RefreshCw,
-  Bot,
-  Send,
+  Sliders02,
+  CheckCircle,
+  MessageAlertCircle,
+  RefreshCw01,
+  CpuChip02,
+  Send01,
   ChevronDown,
   ChevronRight,
   Terminal,
-  FileText,
-  User,
-  RotateCcw
-} from 'lucide-react'
+  File02,
+  User01,
+  RefreshCcw02
+} from '@untitledui/icons'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -260,10 +260,10 @@ export default function AIInsightsPage() {
   // 3. Attrition Radar (third)
   // 4. What-If Simulator (last)
   const TABS = [
-    { id: 'copilot', label: 'Decision Co-pilot', icon: Bot },
-    { id: 'grievances', label: 'Grievance Intelligence', icon: MessageSquareWarning },
-    { id: 'overview', label: 'Workforce Attrition Radar', icon: Brain },
-    { id: 'simulator', label: 'What-If Simulator', icon: Sliders },
+    { id: 'copilot', label: 'Decision Co-pilot', icon: CpuChip02 },
+    { id: 'grievances', label: 'Grievance Intelligence', icon: MessageAlertCircle },
+    { id: 'overview', label: 'Workforce Attrition Radar', icon: CpuChip01 },
+    { id: 'simulator', label: 'What-If Simulator', icon: Sliders02 },
   ]
 
   return (
@@ -277,7 +277,7 @@ export default function AIInsightsPage() {
             onClick={() => fetchInsights(true)}
             className="btn-secondary"
           >
-            <RefreshCw size={15} /> Recalculate Models
+            <RefreshCw01 size={15} /> Recalculate Models
           </button>
         }
       />
@@ -293,13 +293,13 @@ export default function AIInsightsPage() {
         <StatCard
           label="Avg Turnover Risk"
           value={`${data?.averageRiskScore || 0}%`}
-          icon={data?.averageRiskScore > 50 ? TrendingUp : TrendingDown}
+          icon={data?.averageRiskScore > 50 ? TrendUp02 : TrendDown02}
           sub="Weighted composite index"
         />
         <StatCard
           label="High / Critical Alert"
           value={(data?.criticalRiskCount || 0) + (data?.highRiskCount || 0)}
-          icon={ShieldAlert}
+          icon={ShieldOff}
           sub={`${data?.criticalRiskCount || 0} Critical, ${data?.highRiskCount || 0} High risk`}
         />
         <StatCard
@@ -324,7 +324,7 @@ export default function AIInsightsPage() {
                 </h3>
                 {aiSummary ? (
                   <span className="badge-green flex items-center gap-1 text-[11px]">
-                    <Sparkles size={11} /> Briefing Active
+                    <Stars01 size={11} /> Briefing Active
                   </span>
                 ) : (
                   <span className="badge-gray text-[11px]">
@@ -360,7 +360,7 @@ export default function AIInsightsPage() {
                 disabled={loadingSummary}
                 className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
               >
-                <RefreshCw size={12} className={loadingSummary ? 'animate-spin' : ''} />
+                <RefreshCw01 size={12} className={loadingSummary ? 'animate-spin' : ''} />
                 {loadingSummary ? 'Refreshing...' : 'Regenerate Briefing'}
               </button>
             ) : (
@@ -372,12 +372,12 @@ export default function AIInsightsPage() {
               >
                 {loadingSummary ? (
                   <>
-                    <RefreshCw size={13} className="animate-spin" />
+                    <RefreshCw01 size={13} className="animate-spin" />
                     Synthesizing Briefing...
                   </>
                 ) : (
                   <>
-                    <Sparkles size={14} className="text-amber-300" />
+                    <Stars01 size={14} className="text-amber-300" />
                     Generate Operations Briefing
                   </>
                 )}
@@ -389,7 +389,7 @@ export default function AIInsightsPage() {
         {/* Briefing Content Body */}
         {loadingSummary ? (
           <div className="py-6 flex items-center justify-center gap-2.5 text-xs text-brand-700 bg-white/70 rounded-md border border-brand-100 mt-3">
-            <RefreshCw size={16} className="animate-spin text-brand-900" />
+            <RefreshCw01 size={16} className="animate-spin text-brand-900" />
             <span className="font-medium">
               Synthesizing live operational telemetry, fatigue anomalies, and grievance risks...
             </span>
@@ -442,7 +442,7 @@ export default function AIInsightsPage() {
             <div className="flex items-start justify-between flex-wrap gap-2 pb-3 border-b border-brand-100">
               <div>
                 <h3 className="text-sm font-semibold text-brand-900 flex items-center gap-2">
-                  <Bot className="text-brand-900" size={18} />
+                  <CpuChip02 className="text-brand-900" size={18} />
                   Manager Decision Co-pilot
                 </h3>
                 <p className="text-xs text-brand-400 mt-1 max-w-2xl">
@@ -455,7 +455,7 @@ export default function AIInsightsPage() {
                   onClick={resetChat}
                   className="btn-secondary text-xs py-1.5 px-2.5 flex items-center gap-1"
                 >
-                  <RotateCcw size={12} /> New Topic
+                  <RefreshCcw02 size={12} /> New Topic
                 </button>
               )}
             </div>
@@ -503,7 +503,7 @@ export default function AIInsightsPage() {
                           </p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-brand-200 text-brand-900 flex items-center justify-center font-semibold text-xs flex-shrink-0">
-                          <User size={14} />
+                          <User01 size={14} />
                         </div>
                       </div>
                     )}
@@ -511,8 +511,8 @@ export default function AIInsightsPage() {
                     {/* Assistant Response Card */}
                     {msg.role === 'assistant' && (
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 flex items-center justify-center font-semibold text-xs flex-shrink-0 mt-0.5">
-                          <Bot size={16} />
+                        <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 flex items-center justify-center font-semibold text-xs flex-shrink-0 mt-0.5 ring-2 ring-white shadow-sm">
+                          <CpuChip02 size={16} />
                         </div>
                         <div className="flex-1 min-w-0 space-y-3">
                           {/* Minimized Verification Steps (Default Collapsed!) */}
@@ -590,11 +590,11 @@ export default function AIInsightsPage() {
                 {/* Loading / Thinking Indicator in Chat Stream */}
                 {copilotLoading && (
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 flex items-center justify-center font-semibold text-xs flex-shrink-0 mt-0.5">
-                      <Bot size={16} />
+                    <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 flex items-center justify-center font-semibold text-xs flex-shrink-0 mt-0.5 ring-2 ring-white shadow-sm">
+                      <CpuChip02 size={16} />
                     </div>
                     <div className="p-3.5 bg-brand-50/70 border border-brand-200 rounded-lg flex items-center gap-2.5 text-xs text-brand-700">
-                      <RefreshCw size={14} className="animate-spin text-brand-900" />
+                      <RefreshCw01 size={14} className="animate-spin text-brand-900" />
                       <span>Auditing workforce records and synthesizing decision memo...</span>
                     </div>
                   </div>
@@ -630,12 +630,12 @@ export default function AIInsightsPage() {
               >
                 {copilotLoading ? (
                   <>
-                    <RefreshCw className="animate-spin" size={14} />
+                    <RefreshCw01 className="animate-spin" size={14} />
                     Consulting...
                   </>
                 ) : (
                   <>
-                    <Send size={14} />
+                    <Send01 size={14} />
                     Send
                   </>
                 )}
@@ -652,7 +652,7 @@ export default function AIInsightsPage() {
             <div className="flex items-start justify-between flex-wrap gap-2">
               <div>
                 <h3 className="text-sm font-semibold text-brand-900 flex items-center gap-2">
-                  <MessageSquareWarning className="text-brand-700" size={18} />
+                  <MessageAlertCircle className="text-brand-700" size={18} />
                   Grievance Intelligence & Triage Desk
                 </h3>
                 <p className="text-xs text-brand-400 mt-0.5 max-w-2xl">
@@ -690,7 +690,7 @@ export default function AIInsightsPage() {
                       </span>
                       {isCustomMemo ? (
                         <span className="px-2 py-0.5 bg-green-50 text-green-800 font-medium rounded border border-green-200 flex items-center gap-1">
-                          <Sparkles size={11} /> Resolution Memo Active
+                          <Stars01 size={11} /> Resolution Memo Active
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 bg-gray-50 text-gray-600 font-medium rounded border border-gray-200">
@@ -710,7 +710,7 @@ export default function AIInsightsPage() {
                     {/* Official Drafted Memo */}
                     <div className="bg-white p-3 rounded border border-brand-200 text-xs text-brand-700 space-y-1">
                       <p className="font-semibold text-brand-900 flex items-center gap-1">
-                        <FileText size={13} className="text-brand-700" /> Official Resolution Memo:
+                        <File02 size={13} className="text-brand-700" /> Official Resolution Memo:
                       </p>
                       <p className="italic leading-relaxed text-brand-800">&ldquo;{g.draftResponse}&rdquo;</p>
                       <p className="text-[10px] text-brand-400 pt-1">
@@ -734,17 +734,17 @@ export default function AIInsightsPage() {
                     >
                       {isAnalyzing ? (
                         <>
-                          <RefreshCw className="animate-spin" size={13} />
+                          <RefreshCw01 className="animate-spin" size={13} />
                           Formulating Resolution Memo...
                         </>
                       ) : isCustomMemo ? (
                         <>
-                          <Sparkles size={13} />
+                          <Stars01 size={13} />
                           Regenerate Resolution Memo
                         </>
                       ) : (
                         <>
-                          <Sparkles size={13} />
+                          <Stars01 size={13} />
                           Generate Resolution Memo (On-Demand)
                         </>
                       )}
@@ -782,7 +782,7 @@ export default function AIInsightsPage() {
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-800 font-semibold flex items-center justify-center text-xs flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-800 font-semibold flex items-center justify-center text-xs flex-shrink-0 ring-2 ring-white shadow-sm">
                         {emp.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                       </div>
                       <div className="min-w-0">
@@ -874,7 +874,7 @@ export default function AIInsightsPage() {
                   {/* Prescriptive HR Action */}
                   <div className="p-3.5 bg-brand-50 border border-brand-200 rounded">
                     <p className="text-xs font-semibold text-brand-900 flex items-center gap-1.5">
-                      <Sparkles size={14} className="text-brand-700" /> Recommended Action Plan
+                      <Stars01 size={14} className="text-brand-700" /> Recommended Action Plan
                     </p>
                     <p className="text-xs text-brand-700 mt-1.5 leading-relaxed">
                       {selectedEmp.recommendedAction}
@@ -940,7 +940,7 @@ export default function AIInsightsPage() {
           <div className="lg:col-span-7 card p-6 space-y-6">
             <div className="border-b border-brand-100 pb-3">
               <h3 className="text-sm font-semibold text-brand-900 flex items-center gap-2">
-                <Sliders className="text-brand-700" size={18} />
+                <Sliders02 className="text-brand-700" size={18} />
                 Workforce Risk Scenario Simulator
               </h3>
               <p className="text-xs text-brand-400 mt-0.5">
@@ -1052,7 +1052,7 @@ export default function AIInsightsPage() {
           <div className="lg:col-span-5 card p-6 space-y-6 bg-white border border-brand-200">
             <div className="flex items-center justify-between border-b border-brand-100 pb-3">
               <span className="text-xs font-mono uppercase tracking-wider text-brand-600 flex items-center gap-1.5 font-medium">
-                <Sparkles size={14} className="text-brand-900" /> Dynamic Risk Modeling
+                <Stars01 size={14} className="text-brand-900" /> Dynamic Risk Modeling
               </span>
               <span className="text-xs font-mono text-brand-400">Instantaneous Evaluation</span>
             </div>
@@ -1080,7 +1080,7 @@ export default function AIInsightsPage() {
               <ul className="space-y-2 text-xs text-brand-700">
                 {simResult?.retentionAdvice?.map((advice, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 size={14} className="text-brand-900 mt-0.5 flex-shrink-0" />
+                    <CheckCircle size={14} className="text-brand-900 mt-0.5 flex-shrink-0" />
                     <span>{advice}</span>
                   </li>
                 ))}
