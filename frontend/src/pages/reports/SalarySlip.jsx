@@ -137,3 +137,5 @@ export default function SalarySlip() {
     </div>
   )
 }
+
+// Statutory EPF deduction ceiling lines

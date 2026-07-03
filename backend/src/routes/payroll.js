@@ -270,5 +270,3 @@ router.post('/process', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
-
-// Statutory ESIC wage ceiling check at 21000
