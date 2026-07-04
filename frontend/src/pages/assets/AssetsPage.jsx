@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, X, Check } from 'lucide-react'
+import { Plus, X, Check } from '@untitledui/icons'
 import { getAllActiveRooms, allotRoom, vacateRoom, setUniform, returnUniform, getAllUniforms } from '../../api/assets'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
