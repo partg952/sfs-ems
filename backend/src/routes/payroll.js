@@ -270,3 +270,5 @@ router.post('/process', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
+
+// Floor net salary at zero to avoid negative payout
