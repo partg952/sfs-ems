@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, ChevronDown, ChevronUp, Toggle01Left, Toggle01Right } from '@untitledui/icons'
 import { getClients, createClient, toggleClient, getSitesByClient, createSite, toggleSite } from '../../api/clients'
 import { useAuth } from '../../context/AuthContext'
 import { useForm } from 'react-hook-form'
@@ -64,7 +64,7 @@ function SitesPanel({ clientId, canWrite }) {
                 <span className={s.isActive ? 'badge-green' : 'badge-gray'}>{s.isActive ? 'Active' : 'Inactive'}</span>
                 {canWrite && (
                   <button onClick={() => handleToggle(s.id)} className="text-brand-500 hover:text-brand-900">
-                    {s.isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                    {s.isActive ? <Toggle01Right size={16} /> : <Toggle01Left size={16} />}
                   </button>
                 )}
               </div>
@@ -153,7 +153,15 @@ export default function ClientsPage() {
       />
 
       {loading ? <LoadingSpinner /> : clients.length === 0 ? (
-        <EmptyState title="No clients yet" />
+        <EmptyState
+          title="No clients yet"
+          message="Add your first client to start mapping deployment sites and billing rates"
+          action={canWrite() && (
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Add Client
+            </button>
+          )}
+        />
       ) : (
         <div className="space-y-2">
           {clients.map(c => (
@@ -177,7 +185,7 @@ export default function ClientsPage() {
                       onClick={(e) => { e.stopPropagation(); handleToggle(c.id) }}
                       className="text-brand-500 hover:text-brand-900"
                     >
-                      {c.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                      {c.isActive ? <Toggle01Right size={18} /> : <Toggle01Left size={18} />}
                     </span>
                   )}
                   {expanded === c.id ? <ChevronUp size={16} className="text-brand-400" /> : <ChevronDown size={16} className="text-brand-400" />}
