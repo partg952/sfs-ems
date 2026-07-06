@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { getEmployee, createEmployee, updateEmployee, uploadEmployeePhoto } from '../../api/employees'
 import { getSites } from '../../api/clients'
 import PageHeader from '../../components/PageHeader'
+import Breadcrumbs from '../../components/Breadcrumbs'
 import toast from 'react-hot-toast'
 
 const Field = ({ label, error, children }) => (
@@ -85,6 +86,10 @@ export default function EmployeeForm() {
 
   return (
     <div className="max-w-3xl">
+      <Breadcrumbs items={[
+        { label: 'Employees', to: '/employees' },
+        { label: isEdit ? 'Edit Employee' : 'Add New Employee' },
+      ]} />
       <PageHeader
         title={isEdit ? 'Edit Employee' : 'Add New Employee'}
         subtitle={isEdit ? 'Update employee information' : 'Fill in the details to onboard a new employee'}
