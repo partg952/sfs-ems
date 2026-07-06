@@ -9,3 +9,7 @@ Centralized record of guards, status transitions, and wage histories.
 
 ## Module: Assets & Deployment Sites
 Tracking room allotments, monthly rent deductions, and uniform distribution.
+
+
+## Module: Statutory Payroll & Attendance
+Automated wage calculations with ESIC, EPF, and deduction recovery.
