@@ -270,5 +270,3 @@ router.post('/process', requireRoles(...HR_WRITE), async (req, res) => {
 })
 
 export default router
-
-// Deduct active advances and room rent from gross
