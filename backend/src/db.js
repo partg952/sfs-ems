@@ -204,6 +204,48 @@ export async function initDB() {
         UNIQUE (employee_id, month, year)
       );
 
+      CREATE TABLE IF NOT EXISTS leave_quotas (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        year INTEGER NOT NULL,
+        casual_leave_quota INTEGER DEFAULT 12,
+        casual_leave_used INTEGER DEFAULT 0,
+        sick_leave_quota INTEGER DEFAULT 12,
+        sick_leave_used INTEGER DEFAULT 0,
+        earned_leave_quota INTEGER DEFAULT 15,
+        earned_leave_used INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (employee_id, year)
+      );
+
+      CREATE TABLE IF NOT EXISTS leave_requests (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        leave_type VARCHAR(50) NOT NULL,
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        days_requested INTEGER NOT NULL,
+        reason TEXT,
+        status VARCHAR(50) DEFAULT 'PENDING' NOT NULL,
+        reviewer_id INTEGER REFERENCES app_users(id),
+        reviewer_remark TEXT,
+        reviewed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS grievances (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        category VARCHAR(100) NOT NULL,
+        subject VARCHAR(200) NOT NULL,
+        description TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'OPEN' NOT NULL,
+        resolution_notes TEXT,
+        resolved_by INTEGER REFERENCES app_users(id),
+        resolved_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS app_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
