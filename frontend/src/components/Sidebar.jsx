@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, CalendarDays, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/ledger', label: 'Ledger', icon: BookText },
   { to: '/assets', label: 'Assets', icon: Building },
   { to: '/clients', label: 'Clients', icon: Briefcase },
+  { to: '/leave', label: 'Leave', icon: CalendarDays },
   { to: '/shifts', label: 'Shifts', icon: Clock },
   { to: '/reports', label: 'Reports', icon: FileBarChart },
 ]
