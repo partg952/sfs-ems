@@ -19,6 +19,7 @@ import PayrollPage from './pages/payroll/PayrollPage'
 import ReportsPage from './pages/reports/ReportsPage'
 import SalarySlip from './pages/reports/SalarySlip'
 import LeavePage from './pages/leave/LeavePage'
+import GrievancePage from './pages/grievances/GrievancePage'
 
 function AppRoutes() {
   return (
@@ -52,6 +53,11 @@ function AppRoutes() {
       <Route path="/payroll" element={
         <ProtectedRoute>
           <Layout><PayrollPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/grievances" element={
+        <ProtectedRoute>
+          <Layout><GrievancePage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/leave" element={
