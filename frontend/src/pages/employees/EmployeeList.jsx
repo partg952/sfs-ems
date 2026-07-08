@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search } from 'lucide-react'
+import { Plus, SearchMd } from '@untitledui/icons'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/PageHeader'
-import LoadingSpinner from '../../components/LoadingSpinner'
+import { TableSkeleton } from '../../components/Skeleton'
 import EmptyState from '../../components/EmptyState'
 import { formatDate, statusBadge } from '../../utils/format'
 
@@ -49,7 +49,7 @@ export default function EmployeeList() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+          <SearchMd size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
           <input
             className="input pl-9"
             placeholder="Search by name, code, designation, site..."
@@ -74,7 +74,7 @@ export default function EmployeeList() {
         </div>
       </div>
 
-      {loading ? <LoadingSpinner /> : filtered.length === 0 ? (
+      {loading ? <TableSkeleton rows={7} columns={5} /> : filtered.length === 0 ? (
         <EmptyState
           title="No employees found"
           message="Try adjusting your search or filters"
@@ -99,12 +99,12 @@ export default function EmployeeList() {
                   <th className="px-4 py-3 text-left">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {filtered.map(emp => (
                   <tr key={emp.id} className="hover:bg-brand-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-semibold flex items-center justify-center text-xs flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-semibold flex items-center justify-center text-xs flex-shrink-0 ring-2 ring-white shadow-sm">
                           {emp.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
