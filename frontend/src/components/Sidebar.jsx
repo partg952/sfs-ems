@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, CalendarDays, MessageSquareWarning, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, CalendarDays, MessageSquareWarning, FileText, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
@@ -16,8 +16,17 @@ const navItems = [
   { to: '/reports', label: 'Reports', icon: FileBarChart },
 ]
 
+const selfNavItems = [
+  { to: '/',               label: 'My Dashboard',  icon: LayoutGrid },
+  { to: '/self/payslips',  label: 'My Payslips',   icon: FileText },
+  { to: '/self/leave',     label: 'My Leave',      icon: CalendarDays },
+  { to: '/self/grievances',label: 'My Grievances', icon: MessageSquareWarning },
+]
+
 export default function Sidebar({ collapsed, onToggle }) {
-  const { user, logout } = useAuth()
+  
+  const items = user?.role === 'EMPLOYEE' ? selfNavItems : navItems
+  
 
   return (
     <aside
@@ -47,7 +56,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       <nav className="flex-1 px-2 py-3 space-y-0.5">
-        {navItems.map(({ to, label, icon: Icon }) => (
+        {items.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
