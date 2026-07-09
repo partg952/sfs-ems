@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Edit, ArrowLeft, Camera } from 'lucide-react'
+import { Edit01, ArrowLeft, Camera01 } from '@untitledui/icons'
 import { getEmployee, updateStatus, getStatusHistory, getEmploymentHistory, getTransactionHistory, uploadEmployeePhoto } from '../../api/employees'
 import { getRoomByEmployee, getUniformByEmployee } from '../../api/assets'
 import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/PageHeader'
+import Breadcrumbs from '../../components/Breadcrumbs'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import Modal from '../../components/Modal'
 import { formatDate, formatCurrency, statusBadge } from '../../utils/format'
@@ -93,6 +94,10 @@ export default function EmployeeProfile() {
 
   return (
     <div>
+      <Breadcrumbs items={[
+        { label: 'Employees', to: '/employees' },
+        { label: emp.name },
+      ]} />
       <div className="flex items-center gap-3 mb-6">
         <Link to="/employees" className="text-brand-400 hover:text-brand-700">
           <ArrowLeft size={20} />
@@ -105,7 +110,7 @@ export default function EmployeeProfile() {
               {canWrite() && (
                 <>
                   <button onClick={() => setShowStatus(true)} className="btn-secondary">Change Status</button>
-                  <Link to={`/employees/${id}/edit`} className="btn-primary"><Edit size={16}/>Edit</Link>
+                  <Link to={`/employees/${id}/edit`} className="btn-primary"><Edit01 size={16}/>Edit</Link>
                 </>
               )}
             </div>
@@ -120,9 +125,9 @@ export default function EmployeeProfile() {
           <div className="card p-6 text-center">
             <div className="relative w-20 h-20 mx-auto mb-3">
               {emp.photoUrl ? (
-                <img src={emp.photoUrl} alt={emp.name} className="w-20 h-20 rounded-full object-cover" />
+                <img src={emp.photoUrl} alt={emp.name} className="w-20 h-20 rounded-full object-cover ring-4 ring-brand-50 shadow-sm" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-brand-100 text-brand-700 font-semibold text-2xl flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-brand-100 text-brand-700 font-semibold text-2xl flex items-center justify-center ring-4 ring-brand-50 shadow-sm">
                   {emp.name.charAt(0)}
                 </div>
               )}
@@ -134,7 +139,7 @@ export default function EmployeeProfile() {
                   title="Change photo"
                   className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-brand-900 text-white flex items-center justify-center hover:bg-brand-700"
                 >
-                  <Camera size={12} />
+                  <Camera01 size={12} />
                 </button>
               )}
               <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={onPhotoSelected} />
