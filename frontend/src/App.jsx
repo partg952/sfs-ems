@@ -20,6 +20,8 @@ import ReportsPage from './pages/reports/ReportsPage'
 import SalarySlip from './pages/reports/SalarySlip'
 import LeavePage from './pages/leave/LeavePage'
 import GrievancePage from './pages/grievances/GrievancePage'
+import SelfPayslips from './pages/self/SelfPayslips'
+import SelfSlip from './pages/self/SelfSlip'
 
 function AppRoutes() {
   return (
@@ -108,6 +110,16 @@ function AppRoutes() {
       <Route path="/" element={
         <ProtectedRoute>
           <Layout><Dashboard /></Layout>
+        </ProtectedRoute>
+      } />
+            <Route path="/self/payslips" element={
+        <ProtectedRoute roles={['EMPLOYEE']}>
+          <Layout><SelfPayslips /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/self/payslips/slip/:month/:year" element={
+        <ProtectedRoute roles={['EMPLOYEE']}>
+          <Layout><SelfSlip /></Layout>
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
