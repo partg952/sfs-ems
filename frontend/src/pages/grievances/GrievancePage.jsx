@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@untitledui/icons'
 import { getGrievances, createGrievance, updateGrievanceStatus } from '../../api/grievances'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
@@ -90,7 +90,15 @@ export default function GrievancePage() {
       </div>
 
       {loading ? <LoadingSpinner /> : filtered.length === 0 ? (
-        <EmptyState title="No grievances found" />
+        <EmptyState
+          title="No grievances found"
+          message="Client complaints, employee grievances, and disciplinary actions will appear here"
+          action={
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Record Grievance
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map(g => (
