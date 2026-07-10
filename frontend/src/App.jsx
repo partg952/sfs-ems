@@ -22,6 +22,8 @@ import LeavePage from './pages/leave/LeavePage'
 import GrievancePage from './pages/grievances/GrievancePage'
 import SelfPayslips from './pages/self/SelfPayslips'
 import SelfSlip from './pages/self/SelfSlip'
+import SelfLeave from './pages/self/SelfLeave'
+import SelfGrievances from './pages/self/SelfGrievances'
 
 function AppRoutes() {
   return (
@@ -120,6 +122,16 @@ function AppRoutes() {
       <Route path="/self/payslips/slip/:month/:year" element={
         <ProtectedRoute roles={['EMPLOYEE']}>
           <Layout><SelfSlip /></Layout>
+        </ProtectedRoute>
+      } />
+            <Route path="/self/leave" element={
+        <ProtectedRoute roles={['EMPLOYEE']}>
+          <Layout><SelfLeave /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/self/grievances" element={
+        <ProtectedRoute roles={['EMPLOYEE']}>
+          <Layout><SelfGrievances /></Layout>
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
