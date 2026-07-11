@@ -75,5 +75,3 @@ export default function SelfDashboard() {
     </div>
   )
 }
-
-// Responsive layout for guard mobile login
