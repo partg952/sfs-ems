@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Check, X } from 'lucide-react'
+import { Plus, Check, X } from '@untitledui/icons'
 import { getLeaveTypes, createLeaveType, getLeaveRequests, approveLeaveRequest, rejectLeaveRequest } from '../../api/leave'
 import { useForm } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
