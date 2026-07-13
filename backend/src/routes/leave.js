@@ -109,5 +109,3 @@ router.patch('/requests/:id/reject', requireRoles(...HR_WRITE), async (req, res)
 })
 
 export default router
-
-// Validate remaining leave balance before approval
