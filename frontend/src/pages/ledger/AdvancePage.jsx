@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, CheckCircle } from 'lucide-react'
+import { Plus, CheckCircle } from '@untitledui/icons'
 import { getAllAdvances, createAdvance, markAdvanceRecovered } from '../../api/ledger'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
@@ -82,7 +82,15 @@ export default function AdvancePage() {
       </div>
 
       {loading ? <LoadingSpinner /> : filtered.length === 0 ? (
-        <EmptyState title="No advance records" />
+        <EmptyState
+          title="No advance records"
+          message="Advances issued to employees will appear here and get auto-deducted during payroll"
+          action={canWrite() && (
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Record Advance
+            </button>
+          )}
+        />
       ) : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -98,7 +106,7 @@ export default function AdvancePage() {
                   {canWrite() && <th className="px-4 py-3 text-center">Action</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {filtered.map(a => (
                   <tr key={a.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3 font-mono text-xs text-brand-400">{a.transactionId}</td>
