@@ -166,5 +166,3 @@ export default function GrievancePage() {
     </div>
   )
 }
-
-// Grievance resolution timestamp and notes tracking
