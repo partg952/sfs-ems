@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Plus, Toggle01Left, Toggle01Right, Edit01 } from '@untitledui/icons'
-import { getUsers, createUser, updateUser, toggleUser, getSlipTemplate, updateSlipTemplate } from '../../api/admin'
+import { Plus, Toggle01Left, Toggle01Right, Edit01, UserPlus01, Copy01, RefreshCcw01 } from '@untitledui/icons'
+import { getUsers, createUser, updateUser, toggleUser, getSlipTemplate, updateSlipTemplate, getUnlinkedEmployees, suggestUsername } from '../../api/admin'
 import { getEmployees } from '../../api/employees'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
 import Modal from '../../components/Modal'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import EmployeeSelect from '../../components/EmployeeSelect'
 import { formatDate, roleBadge } from '../../utils/format'
 import toast from 'react-hot-toast'
 
@@ -70,13 +71,168 @@ function SlipTemplateEditor() {
   )
 }
 
+/** Generates a readable-but-random first-time password: Word + 3 digits + symbol, e.g. "Falcon482!" - easy for HR to read aloud/write down when handing it to the employee, while still being unguessable. */
+function generateFirstTimePassword() {
+  const words = ['Falcon', 'Harbor', 'Meadow', 'Summit', 'Anchor', 'Copper', 'Maple', 'Ridge', 'Comet', 'Delta', 'Ember', 'Granite']
+  const symbols = ['!', '@', '#', '$', '%']
+  const word = words[Math.floor(Math.random() * words.length)]
+  const digits = String(Math.floor(100 + Math.random() * 900))
+  const symbol = symbols[Math.floor(Math.random() * symbols.length)]
+  return `${word}${digits}${symbol}`
+}
+
+function CreateEmployeeLoginModal({ onClose, onCreated }) {
+  const [unlinkedEmployees, setUnlinkedEmployees] = useState([])
+  const [loadingEmployees, setLoadingEmployees] = useState(true)
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState(generateFirstTimePassword())
+  const [suggesting, setSuggesting] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    getUnlinkedEmployees()
+      .then((r) => setUnlinkedEmployees(r.data?.data ?? []))
+      .finally(() => setLoadingEmployees(false))
+  }, [])
+
+  const selectedEmployee = unlinkedEmployees.find((e) => String(e.id) === String(selectedEmployeeId))
+
+  const handleSelectEmployee = async (empId) => {
+    setSelectedEmployeeId(empId)
+    const emp = unlinkedEmployees.find((e) => String(e.id) === String(empId))
+    if (!emp) return
+    setSuggesting(true)
+    try {
+      const r = await suggestUsername(emp.name)
+      setUsername(r.data?.data?.username || '')
+    } catch {
+      setUsername('')
+    } finally {
+      setSuggesting(false)
+    }
+  }
+
+  const handleRegeneratePassword = () => setPassword(generateFirstTimePassword())
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`Username: ${username}\nPassword: ${password}`)
+    toast.success('Credentials copied to clipboard')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedEmployeeId || !username.trim() || !password.trim()) {
+      toast.error('Select an employee and confirm username/password first')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await createUser({
+        username: username.trim(),
+        password,
+        fullName: selectedEmployee.name,
+        role: 'EMPLOYEE',
+        employeeId: Number(selectedEmployeeId),
+      })
+      toast.success(`Login created for ${selectedEmployee.name}`)
+      onCreated()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create login')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Modal title="Create Employee Login" onClose={onClose}>
+      {loadingEmployees ? <LoadingSpinner /> : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label">Employee *</label>
+            {unlinkedEmployees.length === 0 ? (
+              <p className="text-sm text-brand-400 py-2">
+                Every active employee already has a login account.
+              </p>
+            ) : (
+              <EmployeeSelect
+                employees={unlinkedEmployees}
+                value={selectedEmployeeId}
+                onChange={handleSelectEmployee}
+                placeholder="Search and select an employee..."
+              />
+            )}
+            <p className="text-xs text-brand-400 mt-1">
+              Only active employees without an existing login are listed here.
+            </p>
+          </div>
+
+          {selectedEmployee && (
+            <>
+              <div>
+                <label className="label">Username *</label>
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="input font-mono"
+                  placeholder={suggesting ? 'Suggesting...' : 'username'}
+                  disabled={suggesting}
+                />
+                <p className="text-xs text-brand-400 mt-1">Auto-suggested from the employee's name - edit if you prefer something else.</p>
+              </div>
+
+              <div>
+                <label className="label">First-Time Password *</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRegeneratePassword}
+                    title="Generate a new password"
+                    className="btn-secondary px-2.5 shrink-0"
+                  >
+                    <RefreshCcw01 size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    title="Copy username + password"
+                    className="btn-secondary px-2.5 shrink-0"
+                  >
+                    <Copy01 size={15} />
+                  </button>
+                </div>
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
+                  Share this password with the employee directly (in person or a secure channel) - it is only shown here once and cannot be recovered later, only reset from this Admin page.
+                </p>
+              </div>
+            </>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button type="submit" disabled={submitting || !selectedEmployee} className="btn-primary">
+              {submitting ? 'Creating...' : 'Create Login'}
+            </button>
+            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  )
+}
+
 export default function AdminPage() {
   const [users,     setUsers]     = useState([])
   const [employees, setEmployees] = useState([])
   const [loading,   setLoading]   = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showQuickLoginModal, setShowQuickLoginModal] = useState(false)
   const [editing,   setEditing]   = useState(null)
-  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, watch, control, formState: { errors, isSubmitting } } = useForm()
   const selectedRole = watch('role')
 
   const load = () => {
@@ -125,9 +281,14 @@ export default function AdminPage() {
         title="System Administration"
         subtitle="Manage user accounts and role-based access"
         action={
-          <button onClick={openCreate} className="btn-primary">
-            <Plus size={16} /> Add User
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setShowQuickLoginModal(true)} className="btn-secondary">
+              <UserPlus01 size={16} /> Create Employee Login
+            </button>
+            <button onClick={openCreate} className="btn-primary">
+              <Plus size={16} /> Add User
+            </button>
+          </div>
         }
       />
 
@@ -240,12 +401,14 @@ export default function AdminPage() {
             {selectedRole === 'EMPLOYEE' && (
               <div>
                 <label className="label">Linked Employee *</label>
-                <select {...register('employeeId', { required: selectedRole === 'EMPLOYEE' })} className="input">
-                  <option value="">Select employee</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>
-                  ))}
-                </select>
+                <Controller
+                  name="employeeId"
+                  control={control}
+                  rules={{ required: selectedRole === 'EMPLOYEE' }}
+                  render={({ field }) => (
+                    <EmployeeSelect employees={employees} value={field.value} onChange={field.onChange} />
+                  )}
+                />
                 {errors.employeeId && <p className="text-red-600 text-xs mt-1">Linked employee is required</p>}
               </div>
             )}
@@ -257,6 +420,13 @@ export default function AdminPage() {
             </div>
           </form>
         </Modal>
+      )}
+
+      {showQuickLoginModal && (
+        <CreateEmployeeLoginModal
+          onClose={() => setShowQuickLoginModal(false)}
+          onCreated={() => { setShowQuickLoginModal(false); load() }}
+        />
       )}
     </div>
   )
