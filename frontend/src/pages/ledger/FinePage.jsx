@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@untitledui/icons'
 import { getAllFines, createFine } from '../../api/ledger'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
@@ -55,7 +55,15 @@ export default function FinePage() {
       />
 
       {loading ? <LoadingSpinner /> : fines.length === 0 ? (
-        <EmptyState title="No fine records" message="Fines recorded here will be auto-deducted during payroll" />
+        <EmptyState
+          title="No fine records"
+          message="Fines recorded here will be auto-deducted during payroll"
+          action={canWrite() && (
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Record Fine
+            </button>
+          )}
+        />
       ) : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -70,7 +78,7 @@ export default function FinePage() {
                   <th className="px-4 py-3 text-left">Reason</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {fines.map(f => (
                   <tr key={f.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3 font-mono text-xs text-brand-400">{f.transactionId}</td>
