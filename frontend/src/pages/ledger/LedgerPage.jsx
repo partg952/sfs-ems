@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@untitledui/icons'
 import { getAllTransactions } from '../../api/ledger'
 import PageHeader from '../../components/PageHeader'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -69,7 +69,7 @@ export default function LedgerPage() {
                   <th className="px-4 py-3 text-left">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {transactions.map(t => (
                   <tr key={t.transactionId} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
