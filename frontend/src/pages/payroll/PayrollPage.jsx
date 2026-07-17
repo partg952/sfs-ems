@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, FileText, ClipboardList } from 'lucide-react'
+import { Play, File02, Clipboard } from '@untitledui/icons'
 import { getPayrollByMonth, processPayroll } from '../../api/payroll'
 import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/PageHeader'
@@ -49,7 +49,7 @@ export default function PayrollPage() {
           <div className="flex gap-2">
             {canWrite() && (
               <Link to="/payroll/attendance" className="btn-secondary">
-                <ClipboardList size={16} /> Enter Attendance
+                <Clipboard size={16} /> Enter Attendance
               </Link>
             )}
             {canWrite() && (
@@ -93,7 +93,7 @@ export default function PayrollPage() {
           message="Enter attendance first, then click Process Payroll"
           action={canWrite() && (
             <Link to="/payroll/attendance" className="btn-primary mt-2">
-              <ClipboardList size={16}/> Enter Attendance
+              <Clipboard size={16}/> Enter Attendance
             </Link>
           )}
         />
@@ -117,7 +117,7 @@ export default function PayrollPage() {
                   <th className="px-4 py-3 text-center">Slip</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {records.map(r => (
                   <tr key={r.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
@@ -141,7 +141,7 @@ export default function PayrollPage() {
                         to={`/reports/slip/${r.employeeId}/${r.payrollMonth}/${r.payrollYear}`}
                         className="text-brand-600 hover:text-brand-900 text-xs"
                       >
-                        <FileText size={14} />
+                        <File02 size={14} />
                       </Link>
                     </td>
                   </tr>
