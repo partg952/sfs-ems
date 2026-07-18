@@ -14,6 +14,7 @@ import payrollRoutes from './routes/payroll.js'
 import leaveRoutes from './routes/leave.js'
 import grievanceRoutes from './routes/grievances.js'
 import selfRoutes from './routes/self.js'
+import aiRoutes from './routes/ai.js'
 import path from 'path'
 import fs from 'fs'
 
@@ -47,6 +48,7 @@ app.use('/api/payroll', payrollRoutes)
 app.use('/api/leave', leaveRoutes)
 app.use('/api/grievances', grievanceRoutes)
 app.use('/api/self', selfRoutes)
+app.use('/api/ai', aiRoutes)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'UP', message: 'SFS EMS Node.js Backend is running' })
 })
