@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText } from 'lucide-react'
+import { File02 } from '@untitledui/icons'
 import { getPayrollByMonth } from '../../api/payroll'
 import PageHeader from '../../components/PageHeader'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -78,7 +78,7 @@ export default function ReportsPage() {
                   <th className="px-4 py-3 text-center">Slip</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-50">
+              <tbody className="divide-y divide-brand-50 table-row-zebra">
                 {processed.map(r => (
                   <tr key={r.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
@@ -97,7 +97,7 @@ export default function ReportsPage() {
                         to={`/reports/slip/${r.employeeId}/${r.payrollMonth}/${r.payrollYear}`}
                         className="btn-secondary text-xs py-1"
                       >
-                        <FileText size={13}/> View Slip
+                        <File02 size={13}/> View Slip
                       </Link>
                     </td>
                   </tr>
