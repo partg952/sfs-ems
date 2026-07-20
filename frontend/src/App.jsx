@@ -24,6 +24,7 @@ import SelfPayslips from './pages/self/SelfPayslips'
 import SelfSlip from './pages/self/SelfSlip'
 import SelfLeave from './pages/self/SelfLeave'
 import SelfGrievances from './pages/self/SelfGrievances'
+import AIInsightsPage from './pages/ai/AIInsightsPage'
 
 function AppRoutes() {
   return (
@@ -107,6 +108,11 @@ function AppRoutes() {
       <Route path="/employees" element={
         <ProtectedRoute>
           <Layout><EmployeeList /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ai-insights" element={
+        <ProtectedRoute>
+          <Layout><AIInsightsPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/" element={

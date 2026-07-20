@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, CalendarDays, MessageSquareWarning, FileText, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutGrid, Users, Briefcase, Building, Clock, BookText, Wallet, FileBarChart, CalendarDays, MessageSquareWarning, FileText, Brain, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid },
+  { to: '/ai-insights', label: 'Insights', icon: Brain },
   { to: '/employees', label: 'Employees', icon: Users },
   { to: '/payroll', label: 'Payroll', icon: Wallet },
   { to: '/ledger', label: 'Ledger', icon: BookText },
