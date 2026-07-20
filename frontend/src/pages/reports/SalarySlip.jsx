@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft, Printer } from '@untitledui/icons'
 import { getPayrollSlip, getPayrollSlipHtml } from '../../api/payroll'
 import { getEmployee } from '../../api/employees'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import Breadcrumbs from '../../components/Breadcrumbs'
 import { formatCurrency, formatDate, MONTHS } from '../../utils/format'
 
 function Row({ label, value, bold, isDeduction }) {
@@ -59,6 +60,10 @@ export default function SalarySlip() {
 
   return (
     <div>
+      <Breadcrumbs items={[
+        { label: 'Reports', to: '/reports' },
+        { label: `${emp.name} - ${MONTHS[slip.payrollMonth - 1]} ${slip.payrollYear}` },
+      ]} />
       <div className="flex items-center gap-3 mb-6 no-print">
         <Link to="/reports" className="text-brand-400 hover:text-brand-700"><ArrowLeft size={20}/></Link>
         <h1 className="text-xl font-semibold text-brand-900">Salary Slip</h1>
