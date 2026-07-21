@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, CalendarDays, MessageSquareWarning, ArrowRight } from 'lucide-react'
+import { File02, Calendar, MessageChatCircle, ArrowRight } from '@untitledui/icons'
 import { useAuth } from '../../context/AuthContext'
 import { getMyProfile, getMyLeaveBalances } from '../../api/self'
 import PageHeader from '../../components/PageHeader'
@@ -45,15 +45,15 @@ export default function SelfDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Link to="/self/payslips" className="card p-4 flex items-center justify-between hover:bg-brand-50 transition-colors">
-          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><FileText size={16}/> My Payslips</span>
+          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><File02 size={16}/> My Payslips</span>
           <ArrowRight size={16} className="text-brand-400" />
         </Link>
         <Link to="/self/leave" className="card p-4 flex items-center justify-between hover:bg-brand-50 transition-colors">
-          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><CalendarDays size={16}/> My Leave</span>
+          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><Calendar size={16}/> My Leave</span>
           <ArrowRight size={16} className="text-brand-400" />
         </Link>
         <Link to="/self/grievances" className="card p-4 flex items-center justify-between hover:bg-brand-50 transition-colors">
-          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><MessageSquareWarning size={16}/> My Grievances</span>
+          <span className="text-sm font-medium text-brand-900 flex items-center gap-2"><MessageChatCircle size={16}/> My Grievances</span>
           <ArrowRight size={16} className="text-brand-400" />
         </Link>
       </div>
