@@ -95,3 +95,5 @@ export default function AIMarkdownMemo({ content, className = '' }) {
     </div>
   )
 }
+
+// Executive badge typography polish
