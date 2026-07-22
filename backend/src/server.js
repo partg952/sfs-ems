@@ -7,6 +7,7 @@ import employeeRoutes from './routes/employees.js'
 import clientRoutes from './routes/clients.js'
 import siteRoutes from './routes/sites.js'
 import assetRoutes from './routes/assets.js'
+import adminRoutes from './routes/admin.js'
 import shiftRoutes from './routes/shifts.js'
 import overtimeRoutes from './routes/overtime.js'
 import ledgerRoutes from './routes/ledger.js'
@@ -41,6 +42,7 @@ app.use('/api/employees', employeeRoutes)
 app.use('/api/clients', clientRoutes)
 app.use('/api/sites', siteRoutes)
 app.use('/api/assets', assetRoutes)
+app.use('/api/admin', adminRoutes)
 app.use('/api/shifts', shiftRoutes)
 app.use('/api/overtime', overtimeRoutes)
 app.use('/api/ledger', ledgerRoutes)

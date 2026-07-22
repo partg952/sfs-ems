@@ -3,124 +3,150 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 
-import LoginPage from './pages/LoginPage'
-import Dashboard from './pages/Dashboard'
-import EmployeeList from './pages/employees/EmployeeList'
+import LoginPage       from './pages/LoginPage'
+import Dashboard       from './pages/Dashboard'
+import EmployeeList    from './pages/employees/EmployeeList'
 import EmployeeProfile from './pages/employees/EmployeeProfile'
-import EmployeeForm from './pages/employees/EmployeeForm'
-import ClientsPage from './pages/clients/ClientsPage'
-import AssetsPage from './pages/assets/AssetsPage'
-import ShiftsPage from './pages/shifts/ShiftsPage'
-import LedgerPage from './pages/ledger/LedgerPage'
-import AdvancePage from './pages/ledger/AdvancePage'
-import FinePage from './pages/ledger/FinePage'
-import AttendancePage from './pages/payroll/AttendancePage'
-import PayrollPage from './pages/payroll/PayrollPage'
-import ReportsPage from './pages/reports/ReportsPage'
-import SalarySlip from './pages/reports/SalarySlip'
-import LeavePage from './pages/leave/LeavePage'
-import GrievancePage from './pages/grievances/GrievancePage'
-import SelfPayslips from './pages/self/SelfPayslips'
-import SelfSlip from './pages/self/SelfSlip'
-import SelfLeave from './pages/self/SelfLeave'
-import SelfGrievances from './pages/self/SelfGrievances'
-import AIInsightsPage from './pages/ai/AIInsightsPage'
+import EmployeeForm    from './pages/employees/EmployeeForm'
+import PayrollPage     from './pages/payroll/PayrollPage'
+import AttendancePage  from './pages/payroll/AttendancePage'
+import LedgerPage      from './pages/ledger/LedgerPage'
+import AdvancePage     from './pages/ledger/AdvancePage'
+import FinePage        from './pages/ledger/FinePage'
+import AssetsPage      from './pages/assets/AssetsPage'
+import ReportsPage     from './pages/reports/ReportsPage'
+import SalarySlip      from './pages/reports/SalarySlip'
+import AdminPage       from './pages/admin/AdminPage'
+import ClientsPage     from './pages/clients/ClientsPage'
+import LeavePage       from './pages/leave/LeavePage'
+import GrievancePage   from './pages/grievances/GrievancePage'
+import ShiftsPage      from './pages/shifts/ShiftsPage'
+import SelfPayslips    from './pages/self/SelfPayslips'
+import SelfSlip        from './pages/self/SelfSlip'
+import SelfLeave       from './pages/self/SelfLeave'
+import SelfGrievances  from './pages/self/SelfGrievances'
+import AIInsightsPage   from './pages/ai/AIInsightsPage'
+
+// Every non-EMPLOYEE route below lists its roles explicitly (never `roles`
+// left unset) so a self-service EMPLOYEE login can never reach the full
+// employee roster, payroll, or any other HR-facing screen.
+const ALL_HR_ROLES = ['SUPER_ADMIN', 'HR_MANAGER', 'HR_STAFF', 'ACCOUNTS', 'VIEWER']
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/employees/:id" element={
-        <ProtectedRoute>
-          <Layout><EmployeeProfile /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/employees/new" element={
-        <ProtectedRoute>
-          <Layout><EmployeeForm /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/employees/:id/edit" element={
-        <ProtectedRoute>
-          <Layout><EmployeeForm /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ledger/advances" element={
-        <ProtectedRoute>
-          <Layout><AdvancePage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ledger/fines" element={
-        <ProtectedRoute>
-          <Layout><FinePage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/payroll" element={
-        <ProtectedRoute>
-          <Layout><PayrollPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/grievances" element={
-        <ProtectedRoute>
-          <Layout><GrievancePage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/leave" element={
-        <ProtectedRoute>
-          <Layout><LeavePage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/reports" element={
-        <ProtectedRoute>
-          <Layout><ReportsPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/reports/slip/:employeeId/:month/:year" element={
-        <ProtectedRoute>
-          <Layout><SalarySlip /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/payroll/attendance" element={
-        <ProtectedRoute>
-          <Layout><AttendancePage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ledger" element={
-        <ProtectedRoute>
-          <Layout><LedgerPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/shifts" element={
-        <ProtectedRoute>
-          <Layout><ShiftsPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assets" element={
-        <ProtectedRoute>
-          <Layout><AssetsPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/clients" element={
-        <ProtectedRoute>
-          <Layout><ClientsPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/employees" element={
-        <ProtectedRoute>
-          <Layout><EmployeeList /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ai-insights" element={
-        <ProtectedRoute>
-          <Layout><AIInsightsPage /></Layout>
-        </ProtectedRoute>
-      } />
+
+      {/* Dashboard branches internally by role (EMPLOYEE sees a self-service summary) */}
       <Route path="/" element={
         <ProtectedRoute>
           <Layout><Dashboard /></Layout>
         </ProtectedRoute>
       } />
-            <Route path="/self/payslips" element={
+
+      <Route path="/employees" element={
+        <ProtectedRoute roles={ALL_HR_ROLES}>
+          <Layout><EmployeeList /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/employees/new" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><EmployeeForm /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/employees/:id" element={
+        <ProtectedRoute roles={ALL_HR_ROLES}>
+          <Layout><EmployeeProfile /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/employees/:id/edit" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><EmployeeForm /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/payroll" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS']}>
+          <Layout><PayrollPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/payroll/attendance" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><AttendancePage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/ledger" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><LedgerPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ledger/advances" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><AdvancePage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ledger/fines" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><FinePage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/assets" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><AssetsPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/clients" element={
+        <ProtectedRoute roles={ALL_HR_ROLES}>
+          <Layout><ClientsPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/leave" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><LeavePage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/grievances" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF']}>
+          <Layout><GrievancePage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/shifts" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','HR_STAFF','ACCOUNTS']}>
+          <Layout><ShiftsPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/reports" element={
+        <ProtectedRoute roles={['SUPER_ADMIN','HR_MANAGER','ACCOUNTS']}>
+          <Layout><ReportsPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/reports/slip/:employeeId/:month/:year" element={
+        <ProtectedRoute roles={ALL_HR_ROLES}>
+          <Layout><SalarySlip /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/ai-insights" element={
+        <ProtectedRoute roles={ALL_HR_ROLES}>
+          <Layout><AIInsightsPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/admin" element={
+        <ProtectedRoute roles={['SUPER_ADMIN']}>
+          <Layout><AdminPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      {/* Self-service (EMPLOYEE role only) */}
+      <Route path="/self/payslips" element={
         <ProtectedRoute roles={['EMPLOYEE']}>
           <Layout><SelfPayslips /></Layout>
         </ProtectedRoute>
@@ -130,7 +156,7 @@ function AppRoutes() {
           <Layout><SelfSlip /></Layout>
         </ProtectedRoute>
       } />
-            <Route path="/self/leave" element={
+      <Route path="/self/leave" element={
         <ProtectedRoute roles={['EMPLOYEE']}>
           <Layout><SelfLeave /></Layout>
         </ProtectedRoute>
@@ -140,6 +166,7 @@ function AppRoutes() {
           <Layout><SelfGrievances /></Layout>
         </ProtectedRoute>
       } />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

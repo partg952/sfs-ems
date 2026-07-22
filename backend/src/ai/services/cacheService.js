@@ -46,5 +46,3 @@ class CacheService {
 }
 
 export const cacheService = new CacheService()
-
-// TTL cache eviction interval tuned
