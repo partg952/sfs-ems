@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@untitledui/icons'
 import { getMyGrievances, raiseGrievance } from '../../api/self'
 import { useForm } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
@@ -47,7 +47,15 @@ export default function SelfGrievances() {
       />
 
       {grievances.length === 0 ? (
-        <EmptyState title="No grievances raised" />
+        <EmptyState
+          title="No grievances raised"
+          message="Raise a concern and track its resolution here"
+          action={
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Raise Grievance
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {grievances.map(g => (
