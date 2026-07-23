@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: ems_postgres
+    environment:
+      POSTGRES_DB: ems_db
+      POSTGRES_USER: ems_user
+      POSTGRES_PASSWORD: ems_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ems_user -d ems_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ems_network
+
+  # ── Node.js Express Backend ──────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ems_backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: ems_user
+      DB_PASSWORD: ems_password
+      DB_NAME: ems_db
+      JWT_SECRET: EMS_SECRET_KEY_CHANGE_IN_PRODUCTION_MUST_BE_256_BITS_LONG_!
+      JWT_EXPIRATION_MS: "86400000"
+      UPLOAD_DIR: uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ems_network
+    restart: on-failure
+
+  # ── React Frontend ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ems_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - ems_network
+
+volumes:
+  postgres_data:
+  backend_uploads:
+
+networks:
+  ems_network:
+    driver: bridge
