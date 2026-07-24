@@ -119,3 +119,5 @@ export default function Sidebar({ collapsed, onToggle }) {
     </aside>
   )
 }
+
+// Navigation active indicator and tooltip spacing
