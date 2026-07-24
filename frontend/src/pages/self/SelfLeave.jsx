@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@untitledui/icons'
 import { getMyLeaveBalances, getMyLeaveRequests, applyForLeave, getMyLeaveTypes } from '../../api/self'
 import { useForm } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
@@ -64,7 +64,15 @@ export default function SelfLeave() {
       </div>
 
       {requests.length === 0 ? (
-        <EmptyState title="No leave requests yet" />
+        <EmptyState
+          title="No leave requests yet"
+          message="Apply for leave and track its approval status here"
+          action={
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-2">
+              <Plus size={16} /> Apply for Leave
+            </button>
+          }
+        />
       ) : (
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
