@@ -124,3 +124,5 @@ export function getOpenAIClient() {
 // Backward compatibility aliases
 export const isGeminiConfigured = isLLMConfigured
 export const getGeminiClient = getOpenAIClient
+
+// Fallback response for rate limit encounters
