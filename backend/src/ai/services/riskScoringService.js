@@ -315,5 +315,3 @@ export class RiskScoringService {
     }
   }
 }
-
-// Calibrated sensitivity curves for simulation parameters
