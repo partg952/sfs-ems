@@ -185,7 +185,7 @@ export async function initDB() {
         employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
         payroll_month INTEGER NOT NULL,
         payroll_year INTEGER NOT NULL,
-        attendance_days INTEGER NOT NULL,
+        attendance_days NUMERIC(5,1) NOT NULL,
         total_working_days INTEGER DEFAULT 26,
         gross_salary NUMERIC(10,2) NOT NULL,
         overtime_earning NUMERIC(10,2) DEFAULT 0,
@@ -258,7 +258,55 @@ export async function initDB() {
         updated_by VARCHAR(100),
         updated_at TIMESTAMP DEFAULT NOW()
       );
+
+      -- Maps a biometric punch-machine device id ("empno"/"idno" as it
+      -- appears in the uploaded punch Excel) + site name to a real EMS
+      -- employee. Punch-machine ids are only unique per-site, never
+      -- globally, so the natural key is (punch_id, site_name).
+      -- Populated automatically by employeeSyncService whenever an
+      -- attendance report (Ethnic/Product/Product-Shift/Muster Roll) is
+      -- generated from an uploaded punch file.
+      CREATE TABLE IF NOT EXISTS punch_device_ids (
+        id SERIAL PRIMARY KEY,
+        punch_id VARCHAR(100) NOT NULL,
+        site_name VARCHAR(150) NOT NULL,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (punch_id, site_name)
+      );
+
+      -- Staging table for attendance days computed from punch-file uploads.
+      -- Kept separate from payroll_records (which is the finalized payroll
+      -- draft/processed record) so that an attendance-report upload never
+      -- silently overwrites a payroll figure HR already edited manually -
+      -- the Payroll "Monthly Attendance Input" screen reads from here to
+      -- pre-fill the days field (still editable/overridable by HR), and
+      -- only writes into payroll_records once HR explicitly saves.
+      CREATE TABLE IF NOT EXISTS attendance_days (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        month INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        days NUMERIC(5,1) NOT NULL DEFAULT 0,
+        source VARCHAR(50) NOT NULL DEFAULT 'PUNCH_IMPORT',
+        report_type VARCHAR(50),
+        synced_by VARCHAR(100),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (employee_id, month, year)
+      );
     `)
+
+    // Migration: widen payroll_records.attendance_days from INTEGER to
+    // NUMERIC(5,1) on databases created before half-day (H status, e.g.
+    // 28.5 days) attendance support was added - CREATE TABLE IF NOT EXISTS
+    // above only applies to brand-new databases, so existing installs need
+    // an explicit ALTER. Safe/idempotent: a no-op if already NUMERIC.
+    await client.query(`
+      ALTER TABLE payroll_records
+      ALTER COLUMN attendance_days TYPE NUMERIC(5,1);
+    `)
+
     console.log('✅ PostgreSQL database schema verified.')
   } finally {
     client.release()
