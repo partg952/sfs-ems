@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText } from 'lucide-react'
+import { File02 } from '@untitledui/icons'
 import { getMyPayslips } from '../../api/self'
 import PageHeader from '../../components/PageHeader'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -48,7 +48,7 @@ export default function SelfPayslips() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <Link to={`/self/payslips/slip/${r.payrollMonth}/${r.payrollYear}`} className="text-brand-600 hover:text-brand-900 text-xs">
-                      <FileText size={14} />
+                      <File02 size={14} />
                     </Link>
                   </td>
                 </tr>
