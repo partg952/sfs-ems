@@ -33,6 +33,59 @@ router.put('/slip-template', async (req, res) => {
   }
 })
 
+// GET /api/admin/users/unlinked-employees
+// Lists every active employee who does not yet have a linked app_users
+// login account - powers the "Create Employee Login" quick-action so HR
+// can only pick from employees who genuinely need a new account, instead
+// of the full roster (which risks accidentally creating a duplicate login
+// for someone who already has one).
+router.get('/users/unlinked-employees', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT e.id, e.employee_code as "employeeCode", e.name, e.designation, s.name as "siteName"
+      FROM employees e
+      LEFT JOIN sites s ON s.id = e.site_id
+      WHERE e.status = 'ACTIVE'
+        AND NOT EXISTS (SELECT 1 FROM app_users u WHERE u.employee_id = e.id)
+      ORDER BY e.name
+    `)
+    res.json({ success: true, message: 'Success', data: result.rows })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message, data: null })
+  }
+})
+
+// GET /api/admin/users/suggest-username?name=
+// Suggests a unique username derived from the employee's name (lowercase,
+// first name + last-name-initial, stripped of anything but letters/digits),
+// automatically appending a numeric suffix if the base suggestion is
+// already taken - so HR doesn't have to think one up or hit a duplicate
+// "username already exists" error.
+router.get('/users/suggest-username', async (req, res) => {
+  const name = (req.query.name || '').trim()
+  if (!name) return res.status(400).json({ success: false, message: 'name query parameter is required', data: null })
+
+  const parts = name.toLowerCase().split(/\s+/).filter(Boolean)
+  let base = parts[0] || 'user'
+  if (parts.length > 1) base += parts[parts.length - 1].charAt(0)
+  base = base.replace(/[^a-z0-9]/g, '')
+  if (!base) base = 'user'
+
+  try {
+    let candidate = base
+    let suffix = 1
+    while (true) {
+      const existing = await query('SELECT 1 FROM app_users WHERE username = $1', [candidate])
+      if (existing.rows.length === 0) break
+      suffix += 1
+      candidate = `${base}${suffix}`
+    }
+    res.json({ success: true, message: 'Success', data: { username: candidate } })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message, data: null })
+  }
+})
+
 // GET /api/admin/users
 router.get('/users', async (req, res) => {
   try {
