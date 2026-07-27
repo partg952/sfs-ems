@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft, Printer } from '@untitledui/icons'
 import { getMyPayslipHtml } from '../../api/self'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import Breadcrumbs from '../../components/Breadcrumbs'
+import { MONTHS } from '../../utils/format'
 
 export default function SelfSlip() {
   const { month, year } = useParams()
@@ -40,6 +42,10 @@ export default function SelfSlip() {
 
   return (
     <div>
+      <Breadcrumbs items={[
+        { label: 'My Payslips', to: '/self/payslips' },
+        { label: `${MONTHS[Number(month) - 1]} ${year}` },
+      ]} />
       <div className="flex items-center gap-3 mb-6 no-print">
         <Link to="/self/payslips" className="text-brand-400 hover:text-brand-700"><ArrowLeft size={20}/></Link>
         <h1 className="text-xl font-semibold text-brand-900">Salary Slip</h1>
