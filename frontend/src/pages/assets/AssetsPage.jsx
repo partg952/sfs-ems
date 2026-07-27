@@ -3,11 +3,12 @@ import { Plus, X, Check } from '@untitledui/icons'
 import { getAllActiveRooms, allotRoom, vacateRoom, setUniform, returnUniform, getAllUniforms } from '../../api/assets'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import PageHeader from '../../components/PageHeader'
 import Modal from '../../components/Modal'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import EmptyState from '../../components/EmptyState'
+import EmployeeSelect from '../../components/EmployeeSelect'
 import { formatCurrency, formatDate } from '../../utils/format'
 import toast from 'react-hot-toast'
 
@@ -47,7 +48,11 @@ export default function AssetsPage() {
 
   const onUniformSubmit = async (data) => {
     try {
-      await setUniform(Number(data.employeeId), { isAllotted: true, details: data.details })
+      await setUniform(Number(data.employeeId), {
+        shirtSize: data.shirtSize,
+        pantSize: data.pantSize,
+        shoesSize: data.shoesSize,
+      })
       toast.success('Uniform allotted')
       uniformForm.reset()
       setShowUniformModal(false)
@@ -163,8 +168,9 @@ export default function AssetsPage() {
             <tbody className="divide-y divide-brand-50">
               {empWithUniform.map(e => {
                 const u = uniformByEmployeeId[e.id]
-                const statusLabel = !u || !u.isAllotted ? 'Not Allotted' : u.isReturned ? 'Returned' : 'Allotted'
-                const statusBadgeClass = !u || !u.isAllotted ? 'badge-gray' : u.isReturned ? 'badge-gray' : 'badge-green'
+                const isAllotted = !!u?.allottedDate
+                const statusLabel = !isAllotted ? 'Not Allotted' : u.isReturned ? 'Returned' : 'Allotted'
+                const statusBadgeClass = !isAllotted ? 'badge-gray' : u.isReturned ? 'badge-gray' : 'badge-green'
                 return (
                   <tr key={e.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
@@ -177,7 +183,7 @@ export default function AssetsPage() {
                     </td>
                     {canWrite() && (
                       <td className="px-4 py-3 text-center">
-                        {u?.isAllotted && !u?.isReturned && (
+                        {isAllotted && !u?.isReturned && (
                           <button
                             onClick={() => handleReturnUniform(e.id)}
                             className="text-brand-600 hover:text-brand-900 text-xs flex items-center gap-1 mx-auto"
@@ -203,12 +209,14 @@ export default function AssetsPage() {
           <form onSubmit={roomForm.handleSubmit(onRoomSubmit)} className="space-y-4">
             <div>
               <label className="label">Employee *</label>
-              <select {...roomForm.register('employeeId', { required: true })} className="input">
-                <option value="">Select employee</option>
-                {employees.filter(e => e.status === 'ACTIVE').map(e => (
-                  <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>
-                ))}
-              </select>
+              <Controller
+                name="employeeId"
+                control={roomForm.control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EmployeeSelect employees={employees.filter(e => e.status === 'ACTIVE')} value={field.value} onChange={field.onChange} />
+                )}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -244,16 +252,28 @@ export default function AssetsPage() {
           <form onSubmit={uniformForm.handleSubmit(onUniformSubmit)} className="space-y-4">
             <div>
               <label className="label">Employee *</label>
-              <select {...uniformForm.register('employeeId', { required: true })} className="input">
-                <option value="">Select employee</option>
-                {employees.filter(e => e.status === 'ACTIVE').map(e => (
-                  <option key={e.id} value={e.id}>{e.name} ({e.employeeCode})</option>
-                ))}
-              </select>
+              <Controller
+                name="employeeId"
+                control={uniformForm.control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EmployeeSelect employees={employees.filter(e => e.status === 'ACTIVE')} value={field.value} onChange={field.onChange} />
+                )}
+              />
             </div>
-            <div>
-              <label className="label">Uniform Details</label>
-              <input {...uniformForm.register('details')} className="input" placeholder="e.g. Blue shirt, size L" />
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="label">Shirt Size</label>
+                <input {...uniformForm.register('shirtSize')} className="input" placeholder="e.g. L" />
+              </div>
+              <div>
+                <label className="label">Pant Size</label>
+                <input {...uniformForm.register('pantSize')} className="input" placeholder="e.g. 34" />
+              </div>
+              <div>
+                <label className="label">Shoes Size</label>
+                <input {...uniformForm.register('shoesSize')} className="input" placeholder="e.g. 9" />
+              </div>
             </div>
             <div className="flex gap-3 pt-1">
               <button type="submit" disabled={uniformForm.formState.isSubmitting} className="btn-primary">
