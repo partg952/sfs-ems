@@ -76,6 +76,9 @@ export const downloadMusterRollExcel = () =>
 export const downloadMusterRollPdf = (site) =>
   api.get('/attendance-reports/muster-roll/pdf', { params: { site }, responseType: 'blob' })
 
+export const getInsights = (months = 6) =>
+  api.get('/attendance-reports/insights', { params: { months } })
+
 // --- Unified downloads manifest -------------------------------------------
 
 export const getDownloadsManifest = () =>
