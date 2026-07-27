@@ -6,7 +6,7 @@ import { Eye, EyeOff } from '@untitledui/icons'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, sessionExpired } = useAuth()
   const navigate  = useNavigate()
   const [showPw, setShowPw] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
@@ -34,6 +34,11 @@ export default function LoginPage() {
         {/* Form */}
         <div className="bg-white rounded-xl p-7 shadow-xl shadow-black/20">
           <h2 className="text-base font-semibold text-brand-900 mb-5">Sign in</h2>
+          {sessionExpired && (
+            <div className="mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2.5">
+              Your session has expired. Please sign in again to continue.
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="label">Username</label>
