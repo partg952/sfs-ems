@@ -5,3 +5,6 @@ export const login = (username, password) =>
 
 export const getMe = () =>
   api.get('/auth/me')
+
+export const refreshToken = () =>
+  api.post('/auth/refresh')
