@@ -10,6 +10,7 @@ import Breadcrumbs from '../../components/Breadcrumbs'
 import StatCard from '../../components/StatCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import EmptyState from '../../components/EmptyState'
+import EmployeeSyncBanner from '../../components/EmployeeSyncBanner'
 import { MONTHS } from '../../utils/format'
 import {
   previewProductReport, downloadProductExcel, downloadProductPdf, saveBlobResponse,
@@ -135,6 +136,8 @@ export default function ProductAttendanceReport() {
               </button>
             </div>
           </div>
+
+          <EmployeeSyncBanner sync={report.employeeSync} />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <StatCard label="Total Duty Units" value={report.consolidated.grandTotals.duty.toFixed(1)} icon={Clipboard} tone="green" />
