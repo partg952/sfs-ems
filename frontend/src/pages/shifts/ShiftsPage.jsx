@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@untitledui/icons'
 import { getShifts, createShift, assignShift, recordOvertime, getOvertimeByMonth } from '../../api/shifts'
 import { getEmployees } from '../../api/employees'
 import { useAuth } from '../../context/AuthContext'
