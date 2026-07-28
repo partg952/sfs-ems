@@ -11,6 +11,7 @@ import Breadcrumbs from '../../components/Breadcrumbs'
 import StatCard from '../../components/StatCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import EmptyState from '../../components/EmptyState'
+import EmployeeSyncBanner from '../../components/EmployeeSyncBanner'
 import { MONTHS } from '../../utils/format'
 import {
   previewEthnicReport, downloadEthnicExcel, downloadEthnicPdf, saveBlobResponse,
@@ -162,6 +163,8 @@ export default function EthnicAttendanceReport() {
           <p className="text-sm text-brand-400 mb-4">
             {report.monthTitle} &middot; {report.sites.length} site{report.sites.length !== 1 ? 's' : ''}
           </p>
+
+          <EmployeeSyncBanner sync={report.employeeSync} />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <StatCard label="Full Duty Days" value={grand.full} icon={Users01} tone="green" />
