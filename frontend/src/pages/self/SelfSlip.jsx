@@ -14,7 +14,8 @@ export default function SelfSlip() {
 
   useEffect(() => {
     getMyPayslipHtml(Number(month), Number(year))
-      .then(r => setHtml(r.data?.data ?? null))
+      .then(r => setHtml(r.data ?? null))
+      .catch(() => setHtml(null))
       .finally(() => setLoading(false))
   }, [month, year])
 
