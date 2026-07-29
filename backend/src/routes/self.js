@@ -67,7 +67,7 @@ router.get('/payslips', async (req, res) => {
         transactionId: r.transaction_id,
         payrollMonth: r.payroll_month,
         payrollYear: r.payroll_year,
-        attendanceDays: r.attendance_days,
+        attendanceDays: parseFloat(r.attendance_days) || 0,
         grossSalary: parseFloat(r.gross_salary),
         netSalary: parseFloat(r.net_salary),
         totalDeductions: parseFloat(r.total_deductions),
@@ -125,7 +125,13 @@ router.get('/attendance', async (req, res) => {
       SELECT payroll_month as month, payroll_year as year, attendance_days as days, total_working_days as "totalDays"
       FROM payroll_records WHERE employee_id = $1 ORDER BY payroll_year DESC, payroll_month DESC
     `, [empId])
-    res.json({ success: true, message: 'Success', data: result.rows })
+    const data = result.rows.map(r => ({
+      month: r.month,
+      year: r.year,
+      days: parseFloat(r.days) || 0,
+      totalDays: r.totalDays,
+    }))
+    res.json({ success: true, message: 'Success', data })
   } catch (err) {
     res.status(500).json({ success: false, message: err.message, data: null })
   }
