@@ -26,11 +26,21 @@ import SelfSlip        from './pages/self/SelfSlip'
 import SelfLeave       from './pages/self/SelfLeave'
 import SelfGrievances  from './pages/self/SelfGrievances'
 import AIInsightsPage   from './pages/ai/AIInsightsPage'
+import AttendanceReportsPage      from './pages/attendance-reports/AttendanceReportsPage'
+import EthnicAttendanceReport     from './pages/attendance-reports/EthnicAttendanceReport'
+import ProductAttendanceReport    from './pages/attendance-reports/ProductAttendanceReport'
+import ProductShiftAttendanceReport from './pages/attendance-reports/ProductShiftAttendanceReport'
+import MusterRollReport           from './pages/attendance-reports/MusterRollReport'
+import DownloadsPage              from './pages/attendance-reports/DownloadsPage'
 
 // Every non-EMPLOYEE route below lists its roles explicitly (never `roles`
 // left unset) so a self-service EMPLOYEE login can never reach the full
 // employee roster, payroll, or any other HR-facing screen.
 const ALL_HR_ROLES = ['SUPER_ADMIN', 'HR_MANAGER', 'HR_STAFF', 'ACCOUNTS', 'VIEWER']
+
+// Punch-attendance report generator module shares the Payroll/Reports access
+// tier and is gated identically on the backend (VIEWER excluded).
+const REPORT_GEN_ROLES = ['SUPER_ADMIN', 'HR_MANAGER', 'HR_STAFF', 'ACCOUNTS']
 
 function AppRoutes() {
   return (
@@ -136,6 +146,37 @@ function AppRoutes() {
       <Route path="/ai-insights" element={
         <ProtectedRoute roles={ALL_HR_ROLES}>
           <Layout><AIInsightsPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/attendance-reports" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><AttendanceReportsPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/attendance-reports/ethnic" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><EthnicAttendanceReport /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/attendance-reports/product" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><ProductAttendanceReport /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/attendance-reports/product-shift" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><ProductShiftAttendanceReport /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/attendance-reports/muster-roll" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><MusterRollReport /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/attendance-reports/downloads" element={
+        <ProtectedRoute roles={REPORT_GEN_ROLES}>
+          <Layout><DownloadsPage /></Layout>
         </ProtectedRoute>
       } />
 
