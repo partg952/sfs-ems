@@ -48,7 +48,7 @@ export async function lookupEmployee({ query: searchTerm }) {
   if (payRes.rows.length > 0) {
     const p = payRes.rows[0]
     totalWorkingDays = p.total_working_days || 26
-    attendanceDays = p.attendance_days || 24
+    attendanceDays = p.attendance_days != null ? parseFloat(p.attendance_days) : 24
     monthlyWage = parseFloat(p.gross_earnings || emp.monthly_wage || 15000)
     attendanceRate = Math.min(100.0, (attendanceDays / totalWorkingDays) * 100.0)
   }
