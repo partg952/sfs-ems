@@ -187,16 +187,30 @@ export async function seedDemoData() {
 }
 
 export async function seedLeaveData() {
-  const typeCheck = await query('SELECT count(*) FROM leave_types')
-  if (parseInt(typeCheck.rows[0].count, 10) === 0) {
-    await query(`
-      INSERT INTO leave_types (name, annual_quota, is_paid)
-      VALUES
-        ('Casual Leave', 12, true),
-        ('Sick Leave', 8, true),
-        ('Earned Leave', 15, true),
-        ('Leave Without Pay', 0, false);
-    `)
+  // Ensure each standard leave type exists individually (rather than a
+  // blanket "if leave_types is empty" check) - this is resilient to a
+  // partially-seeded or corrupted state (e.g. a stray/incorrectly-named
+  // row) that would otherwise permanently block the real defaults from
+  // ever being inserted, since count() would never be exactly 0 again.
+  const STANDARD_LEAVE_TYPES = [
+    { name: 'Casual Leave', annualQuota: 12, isPaid: true },
+    { name: 'Sick Leave', annualQuota: 8, isPaid: true },
+    { name: 'Earned Leave', annualQuota: 15, isPaid: true },
+    { name: 'Leave Without Pay', annualQuota: 0, isPaid: false },
+  ]
+
+  let insertedAny = false
+  for (const t of STANDARD_LEAVE_TYPES) {
+    const existing = await query('SELECT id FROM leave_types WHERE name = $1', [t.name])
+    if (existing.rows.length === 0) {
+      await query(
+        'INSERT INTO leave_types (name, annual_quota, is_paid) VALUES ($1, $2, $3)',
+        [t.name, t.annualQuota, t.isPaid]
+      )
+      insertedAny = true
+    }
+  }
+  if (insertedAny) {
     console.log('🌱 Default leave types seeded (Casual, Sick, Earned, LWP).')
   }
 
