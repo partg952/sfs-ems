@@ -19,7 +19,7 @@ function formatPayroll(r) {
     siteName: r.site_name,
     payrollMonth: r.payroll_month,
     payrollYear: r.payroll_year,
-    attendanceDays: r.attendance_days,
+    attendanceDays: parseFloat(r.attendance_days) || 0,
     totalWorkingDays: r.total_working_days || 26,
     grossSalary: parseFloat(r.gross_salary) || 0,
     overtimeEarning: parseFloat(r.overtime_earning) || 0,
@@ -166,6 +166,39 @@ router.get('/slip/html', requireRoles(...ALL_PAYROLL_READ), async (req, res) => 
   }
 })
 
+// GET /api/payroll/attendance-prefill?month=&year=
+// Returns attendance days auto-synced from attendance-report punch-file
+// uploads (attendance_days staging table) for the given month/year, keyed
+// by employeeId. Used by the "Monthly Attendance Input" screen to pre-fill
+// the days field for employees who haven't had their attendance manually
+// saved to payroll_records yet - HR can still freely edit/override any
+// value before saving. Never overwrites payroll_records itself.
+router.get('/attendance-prefill', requireRoles(...ALL_PAYROLL_READ), async (req, res) => {
+  const month = parseInt(req.query.month, 10) || new Date().getMonth() + 1
+  const year = parseInt(req.query.year, 10) || new Date().getFullYear()
+
+  try {
+    const result = await query(
+      `SELECT employee_id, days, report_type, synced_by, updated_at
+       FROM attendance_days
+       WHERE month = $1 AND year = $2`,
+      [month, year]
+    )
+    const data = {}
+    for (const row of result.rows) {
+      data[row.employee_id] = {
+        days: parseFloat(row.days) || 0,
+        reportType: row.report_type,
+        syncedBy: row.synced_by,
+        updatedAt: row.updated_at,
+      }
+    }
+    res.json({ success: true, message: 'Success', data })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message, data: null })
+  }
+})
+
 // POST /api/payroll/attendance
 router.post('/attendance', requireRoles(...HR_WRITE), async (req, res) => {
   const { entries, month, year } = req.body
@@ -179,8 +212,16 @@ router.post('/attendance', requireRoles(...HR_WRITE), async (req, res) => {
       const empRes = await query('SELECT daily_wage, monthly_wage FROM employees WHERE id = $1', [e.employeeId])
       if (empRes.rows.length === 0) continue
 
-      const daily = parseFloat(empRes.rows[0].daily_wage) || 0
-      const gross = daily * parseInt(e.days, 10)
+      const dailyWageRaw = parseFloat(empRes.rows[0].daily_wage) || 0
+      const monthlyWageRaw = parseFloat(empRes.rows[0].monthly_wage) || 0
+      // If HR only filled in Monthly Wage (common for salaried staff) and
+      // left Daily Wage at its 0 placeholder, derive an effective daily
+      // rate from monthly_wage / 26 (the same 26-day standard working-month
+      // convention used everywhere else in payroll) instead of silently
+      // computing a 0 gross salary.
+      const daily = dailyWageRaw > 0 ? dailyWageRaw : (monthlyWageRaw > 0 ? monthlyWageRaw / 26 : 0)
+      const days = parseFloat(e.days) || 0
+      const gross = daily * days
 
       await query(`
         INSERT INTO payroll_records (
@@ -192,7 +233,7 @@ router.post('/attendance', requireRoles(...HR_WRITE), async (req, res) => {
           gross_salary = EXCLUDED.gross_salary,
           net_salary = EXCLUDED.gross_salary,
           updated_at = NOW();
-      `, [txId, e.employeeId, month, year, e.days, gross, req.user.username])
+      `, [txId, e.employeeId, month, year, days, gross, req.user.username])
     }
     res.json({ success: true, message: 'Attendance saved successfully', data: null })
   } catch (err) {
@@ -210,7 +251,28 @@ router.post('/process', requireRoles(...HR_WRITE), async (req, res) => {
     )
 
     for (const p of drafts.rows) {
-      const gross = parseFloat(p.gross_salary) || 0
+      // Recompute gross salary from the employee's CURRENT wage before
+      // finalizing, rather than trusting whatever was stored on the
+      // payroll row - that stored figure may have been baked in at 0 if
+      // Daily/Monthly Wage was only set on the employee profile AFTER
+      // attendance was entered (manually, or via a punch-file auto-sync
+      // that auto-created the employee with a 0 placeholder wage). Only
+      // recompute for DRAFT records though: a PROCESSED/PAID record has
+      // already been finalized and disbursed against a specific gross
+      // figure, so re-running Process Payroll must never silently change
+      // an amount that may already be reflected in a paid payslip.
+      let gross = parseFloat(p.gross_salary) || 0
+      if (p.status === 'DRAFT') {
+        const dailyWageRaw = parseFloat(p.daily_wage) || 0
+        const monthlyWageRaw = parseFloat(p.monthly_wage) || 0
+        const dailyRate = dailyWageRaw > 0 ? dailyWageRaw : (monthlyWageRaw > 0 ? monthlyWageRaw / 26 : 0)
+        const attendanceDays = parseFloat(p.attendance_days) || 0
+        const recomputedGross = dailyRate * attendanceDays
+        if (recomputedGross !== gross) {
+          gross = recomputedGross
+          await query('UPDATE payroll_records SET gross_salary = $1 WHERE id = $2', [gross, p.id])
+        }
+      }
 
       // Overtime
       const otRes = await query('SELECT amount FROM overtime_records WHERE employee_id = $1 AND month = $2 AND year = $3', [p.employee_id, month, year])
@@ -266,6 +328,110 @@ router.post('/process', requireRoles(...HR_WRITE), async (req, res) => {
     res.json({ success: true, message: `Payroll processed successfully for ${month}/${year}`, data: null })
   } catch (err) {
     res.status(500).json({ success: false, message: err.message, data: null })
+  }
+})
+
+// PATCH /api/payroll/:id/recalculate
+// Recomputes gross salary (and downstream statutory deductions/net) for a
+// single payroll record from the employee's CURRENT Daily/Monthly Wage.
+// Fixes records that were finalized with a stale ₹0 gross because the
+// employee's wage was only set on their profile after this payroll row
+// was created (common for employees auto-created from a punch-file
+// import, which start at wage 0 until HR reviews and sets a real rate).
+// Only allowed on DRAFT or PROCESSED records - a PAID record has already
+// been disbursed, so its figures must never be silently changed after
+// the fact; HR would need to reverse and reprocess it deliberately.
+router.patch('/:id/recalculate', requireRoles(...HR_WRITE), async (req, res) => {
+  try {
+    const existing = await query(
+      `SELECT p.*, e.daily_wage, e.monthly_wage FROM payroll_records p JOIN employees e ON e.id = p.employee_id WHERE p.id = $1`,
+      [req.params.id]
+    )
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Payroll record not found', data: null })
+    }
+    const p = existing.rows[0]
+    if (p.status === 'PAID') {
+      return res.status(409).json({ success: false, message: 'A PAID payroll record cannot be recalculated - it has already been disbursed', data: null })
+    }
+
+    const dailyWageRaw = parseFloat(p.daily_wage) || 0
+    const monthlyWageRaw = parseFloat(p.monthly_wage) || 0
+    const dailyRate = dailyWageRaw > 0 ? dailyWageRaw : (monthlyWageRaw > 0 ? monthlyWageRaw / 26 : 0)
+    const attendanceDays = parseFloat(p.attendance_days) || 0
+    const gross = dailyRate * attendanceDays
+
+    const otRes = await query('SELECT amount FROM overtime_records WHERE employee_id = $1 AND month = $2 AND year = $3', [p.employee_id, p.payroll_month, p.payroll_year])
+    const otPay = otRes.rows.length > 0 ? parseFloat(otRes.rows[0].amount) : 0
+    const totalGross = gross + otPay
+
+    let esic = 0
+    if (totalGross <= 21000) {
+      esic = Math.round(totalGross * 0.0075 * 100) / 100
+    }
+    const epf = Math.round(Math.min(totalGross, 15000) * 0.12 * 100) / 100
+
+    const advRes = await query('SELECT COALESCE(SUM(amount), 0) as total FROM advances WHERE employee_id = $1 AND is_recovered = false', [p.employee_id])
+    const adv = parseFloat(advRes.rows[0].total) || 0
+
+    const fineRes = await query('SELECT COALESCE(SUM(amount), 0) as total FROM fines WHERE employee_id = $1 AND EXTRACT(MONTH FROM fine_date) = $2 AND EXTRACT(YEAR FROM fine_date) = $3', [p.employee_id, p.payroll_month, p.payroll_year])
+    const fine = parseFloat(fineRes.rows[0].total) || 0
+
+    const roomRes = await query('SELECT monthly_rent FROM rooms WHERE employee_id = $1 AND is_vacated = false LIMIT 1', [p.employee_id])
+    const rent = roomRes.rows.length > 0 ? parseFloat(roomRes.rows[0].monthly_rent) : 0
+
+    const totalDeductions = esic + epf + adv + fine + rent
+    const net = Math.max(0, totalGross - totalDeductions)
+
+    const updated = await query(`
+      UPDATE payroll_records SET
+        gross_salary = $1,
+        overtime_earning = $2,
+        esic_deduction = $3,
+        epf_deduction = $4,
+        advance_deduction = $5,
+        fine_deduction = $6,
+        rent_deduction = $7,
+        total_deductions = $8,
+        net_salary = $9,
+        updated_at = NOW()
+      WHERE id = $10
+      RETURNING *
+    `, [gross, otPay, esic, epf, adv, fine, rent, totalDeductions, net, req.params.id])
+
+    res.json({ success: true, message: 'Payroll recalculated from current employee wage', data: formatPayroll(updated.rows[0]) })
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message, data: null })
+  }
+})
+
+// PATCH /api/payroll/:id/mark-paid
+// Transitions a PROCESSED payroll record to PAID once the salary has
+// actually been disbursed to the employee (bank transfer / cash payout
+// confirmed) - the final step in the DRAFT -> PROCESSED -> PAID lifecycle.
+// Only PROCESSED records can be marked paid (a DRAFT record hasn't had its
+// statutory deductions calculated yet, so paying it out would be wrong).
+router.patch('/:id/mark-paid', requireRoles(...HR_WRITE), async (req, res) => {
+  try {
+    const existing = await query('SELECT status FROM payroll_records WHERE id = $1', [req.params.id])
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Payroll record not found', data: null })
+    }
+    if (existing.rows[0].status !== 'PROCESSED') {
+      return res.status(409).json({
+        success: false,
+        message: `Only a PROCESSED payroll record can be marked as paid (current status: ${existing.rows[0].status})`,
+        data: null,
+      })
+    }
+
+    const result = await query(
+      `UPDATE payroll_records SET status = 'PAID', processed_by = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [req.user.username, req.params.id]
+    )
+    res.json({ success: true, message: 'Payroll marked as paid', data: formatPayroll(result.rows[0]) })
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message, data: null })
   }
 })
 
