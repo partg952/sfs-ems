@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, File02, Clipboard } from '@untitledui/icons'
-import { getPayrollByMonth, processPayroll } from '../../api/payroll'
+import { Play, File02, Clipboard, CheckCircle, RefreshCcw01 } from '@untitledui/icons'
+import { getPayrollByMonth, processPayroll, markPayrollPaid, recalculatePayroll } from '../../api/payroll'
 import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/PageHeader'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -36,8 +36,37 @@ export default function PayrollPage() {
     } catch {/* handled */} finally { setProcessing(false) }
   }
 
+  const [markingPaidId, setMarkingPaidId] = useState(null)
+  const handleMarkPaid = async (id) => {
+    setMarkingPaidId(id)
+    try {
+      await markPayrollPaid(id)
+      toast.success('Marked as paid')
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to mark as paid')
+    } finally {
+      setMarkingPaidId(null)
+    }
+  }
+
+  const [recalculatingId, setRecalculatingId] = useState(null)
+  const handleRecalculate = async (id) => {
+    setRecalculatingId(id)
+    try {
+      await recalculatePayroll(id)
+      toast.success('Gross pay recalculated from current wage')
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to recalculate')
+    } finally {
+      setRecalculatingId(null)
+    }
+  }
+
   const totalNet   = records.reduce((s, r) => s + (r.netSalary   ?? 0), 0)
   const totalGross = records.reduce((s, r) => s + (r.grossSalary ?? 0), 0)
+  const unsetWageCount = records.filter(r => r.grossSalary === 0 && r.attendanceDays > 0).length
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
   return (
@@ -87,6 +116,15 @@ export default function PayrollPage() {
         </div>
       )}
 
+      {unsetWageCount > 0 && (
+        <div className="card p-3 mb-5 border-l-4 border-l-amber-500 text-sm text-amber-800 bg-amber-50">
+          {unsetWageCount} employee(s) show ₹0.00 gross pay. This happens when Daily/Monthly Wage is still 0 on their
+          profile, or was set <em>after</em> this payroll record was already created (e.g. auto-created from a punch-file
+          import). If you've since set their wage in Employee Hub, click <strong>Recalculate</strong> on that row below
+          (visible for DRAFT/PROCESSED records) to pull in the current wage - it won't affect already-PAID records.
+        </div>
+      )}
+
       {loading ? <LoadingSpinner /> : records.length === 0 ? (
         <EmptyState
           title="No payroll records"
@@ -121,11 +159,30 @@ export default function PayrollPage() {
                 {records.map(r => (
                   <tr key={r.id} className="hover:bg-brand-50">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-brand-900">{r.employeeName}</p>
+                      <Link to={`/employees/${r.employeeId}`} className="font-medium text-brand-900 hover:underline">{r.employeeName}</Link>
                       <p className="text-xs text-brand-400">{r.employeeCode}</p>
                     </td>
                     <td className="px-4 py-3 text-center">{r.attendanceDays ?? '—'}</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(r.grossSalary)}</td>
+                    <td className="px-4 py-3 text-right">
+                      {formatCurrency(r.grossSalary)}
+                      {r.grossSalary === 0 && r.attendanceDays > 0 && (
+                        <span
+                          className="block text-[10px] text-amber-600 font-normal"
+                          title="Gross pay is ₹0 - either Daily/Monthly Wage is unset, or was set after this record was created. If the employee's wage is now set, use Recalculate."
+                        >
+                          Wage not set
+                        </span>
+                      )}
+                      {r.grossSalary === 0 && r.attendanceDays > 0 && r.status !== 'PAID' && canWrite() && (
+                        <button
+                          onClick={() => handleRecalculate(r.id)}
+                          disabled={recalculatingId === r.id}
+                          className="mt-1 flex items-center gap-1 justify-end text-[10px] text-brand-600 hover:text-brand-900 ml-auto"
+                        >
+                          <RefreshCcw01 size={10} /> {recalculatingId === r.id ? 'Recalculating...' : 'Recalculate'}
+                        </button>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right">{formatCurrency(r.overtimeEarning)}</td>
                     <td className="px-4 py-3 text-right text-red-600">{formatCurrency(r.esicDeduction)}</td>
                     <td className="px-4 py-3 text-right text-red-600">{formatCurrency(r.epfDeduction)}</td>
@@ -135,6 +192,15 @@ export default function PayrollPage() {
                     <td className="px-4 py-3 text-right font-semibold text-brand-900">{formatCurrency(r.netSalary)}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={payrollStatusBadge(r.status)}>{r.status}</span>
+                      {r.status === 'PROCESSED' && canWrite() && (
+                        <button
+                          onClick={() => handleMarkPaid(r.id)}
+                          disabled={markingPaidId === r.id}
+                          className="mt-1 flex items-center gap-1 justify-center text-xs text-brand-600 hover:text-brand-900 mx-auto"
+                        >
+                          <CheckCircle size={12} /> {markingPaidId === r.id ? 'Marking...' : 'Mark Paid'}
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Link
