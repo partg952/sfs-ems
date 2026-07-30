@@ -38,8 +38,8 @@ export async function simulateRiskImpact({
     return { error: `Employee '${employeeCode}' was not found in active roster.` }
   }
 
-  const baseAttDays = parseInt(baseline.attendanceDays, 10) || 24
-  const newAttDays = Math.max(5, Math.min(26, baseAttDays + parseInt(changeAttendanceDays || 0, 10)))
+  const baseAttDays = parseFloat(baseline.attendanceDays) || 24
+  const newAttDays = Math.max(5, Math.min(26, baseAttDays + (parseFloat(changeAttendanceDays) || 0)))
   const newAttRate = (newAttDays / 26) * 100
 
   const newOT = Math.max(0, parseFloat(baseline.monthlyOvertimeHours || 0) + parseFloat(additionalOvertime || 0))
