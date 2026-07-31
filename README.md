@@ -166,6 +166,15 @@ The application is architected as a decoupled, 3-tier client-server system with 
 * **Self Leave Application**: Apply for leave directly from a mobile device or kiosk.
 * **Grievance Submission**: Submit workplace or safety grievances directly to management.
 
+### 11. 📊 Advanced Attendance Reporting & Statutory Compliance Suite
+* **Central Attendance Reports Hub**: Unified analytics hub categorizing statutory muster rolls, diversity rosters, and shift allocations.
+* **Form II Statutory Muster Roll**: Legal compliance muster roll generation detailing daily attendance codes (P, A, L, WO), working days, and overtime.
+* **Ethnic Workforce Distribution**: Demographic attendance breakdowns tracking deployment diversity across operational zones.
+* **Product & Client Deployment Reports**: Product-wise (Guards, Armed Security, Housekeeping) attendance rosters mapped to client contracts.
+* **Product-Shift Cross Tabulation**: Deep shift-level (Morning, Evening, Night) operational deployment and attendance rosters.
+* **High-Performance Multi-Format Exports**: Server-side styled Excel (`.xlsx`) generation with formulas via `exceljs` and official vector PDF (`.pdf`) rosters via `pdfkit`.
+* **Batch Downloads Manager**: Dedicated interface for managing generated rosters and batch downloads.
+
 ---
 
 ## 🧠 5. Applied AI Workforce Intelligence Suite
@@ -329,6 +338,14 @@ The PostgreSQL relational schema consists of 19 interconnected tables:
 * `GET  /api/self/attendance` – View own attendance.
 * `POST /api/self/leave/requests` – Apply for leave.
 * `POST /api/self/grievances` – Submit grievance.
+
+### Attendance Reports & Statutory Exports
+* `GET  /api/attendance-reports/muster-roll` – Form II statutory muster roll dataset with daily status codes.
+* `GET  /api/attendance-reports/ethnic` – Workforce ethnic diversity attendance distribution.
+* `GET  /api/attendance-reports/product` – Product-wise guard deployment and attendance breakdown.
+* `GET  /api/attendance-reports/product-shift` – Shift-level product deployment and attendance cross-matrix.
+* `GET  /api/attendance-reports/export/excel` – Download multi-tab styled Excel attendance workbook (`.xlsx`).
+* `GET  /api/attendance-reports/export/pdf` – Download official printable monthly attendance PDF roster (`.pdf`).
 
 ---
 
