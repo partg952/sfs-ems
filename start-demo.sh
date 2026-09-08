@@ -33,7 +33,7 @@ if [ -n "$CONTAINER_CMD" ]; then
                 -e POSTGRES_DB=ems_db \
                 -e POSTGRES_USER=ems_user \
                 -e POSTGRES_PASSWORD=ems_password \
-                -p 5432:5432 \
+                -p 5433:5432 \
                 postgres:16-alpine
         fi
     else

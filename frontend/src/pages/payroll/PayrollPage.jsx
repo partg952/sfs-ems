@@ -31,7 +31,7 @@ export default function PayrollPage() {
     setProcessing(true)
     try {
       const r = await processPayroll({ month, year })
-      toast.success(`Processed payroll for ${r.data?.data?.length ?? 0} employees`)
+      toast.success(r.data?.message ?? 'Payroll processed successfully')
       load()
     } catch {/* handled */} finally { setProcessing(false) }
   }

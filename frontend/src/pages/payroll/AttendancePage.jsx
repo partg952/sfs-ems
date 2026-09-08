@@ -43,23 +43,20 @@ export default function AttendancePage() {
 
   const handleSaveAll = async () => {
     setSaving(true)
-    let success = 0, failed = 0
-    for (const emp of employees) {
-      const days = inputs[emp.id]
-      if (days === '' || days == null) continue
-      try {
-        await saveAttendance({
-          employeeId: emp.id,
-          month, year,
-          attendanceDays: Number(days),
-          totalWorkingDays: 26,
-        })
-        success++
-      } catch { failed++ }
+    const entries = employees
+      .filter(emp => inputs[emp.id] !== '' && inputs[emp.id] != null)
+      .map(emp => ({ employeeId: emp.id, days: Number(inputs[emp.id]) }))
+
+    if (entries.length === 0) { setSaving(false); return }
+
+    try {
+      await saveAttendance({ entries, month, year })
+      toast.success(`Saved attendance for ${entries.length} employee(s)`)
+    } catch {
+      toast.error('Failed to save attendance')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    if (success) toast.success(`Saved attendance for ${success} employee(s)`)
-    if (failed)  toast.error(`Failed to save ${failed} record(s)`)
   }
 
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
