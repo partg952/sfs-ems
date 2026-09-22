@@ -4,7 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import { config } from './config.js'
 import { initDB } from './db.js'
-import { seedDefaultUsers, seedDemoData } from './seed.js'
+import { seedDefaultUsers, seedDemoData, seedLeaveData } from './seed.js'
 
 import authRoutes from './routes/auth.js'
 import employeeRoutes from './routes/employees.js'
@@ -70,6 +70,7 @@ async function startServer() {
     console.log('🌱 Seeding users and demo dataset...')
     await seedDefaultUsers()
     await seedDemoData()
+    await seedLeaveData()
 
     app.listen(config.port, () => {
       console.log(`🚀 SFS-EMS Node.js Express backend running on http://localhost:${config.port}`)

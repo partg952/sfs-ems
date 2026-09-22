@@ -145,10 +145,16 @@ router.get('/leave/types', async (req, res) => {
 router.get('/leave/balances', async (req, res) => {
   try {
     const empId = await getSelfEmployeeId(req)
+    if (!empId) return res.status(404).json({ success: false, message: 'Employee profile not linked', data: null })
+
     const result = await query(`
-      SELECT b.*, t.name as "leaveTypeName"
-      FROM leave_balances b JOIN leave_types t ON t.id = b.leave_type_id
+      SELECT b.id, b.employee_id as "employeeId", b.leave_type_id as "leaveTypeId",
+             t.name as "leaveTypeName", b.year, b.total_allocated as "totalAllocated",
+             b.used, b.remaining
+      FROM leave_balances b
+      JOIN leave_types t ON t.id = b.leave_type_id
       WHERE b.employee_id = $1
+      ORDER BY b.year DESC, t.name
     `, [empId])
     res.json({ success: true, message: 'Success', data: result.rows })
   } catch (err) {
@@ -159,12 +165,44 @@ router.get('/leave/balances', async (req, res) => {
 // POST /api/self/leave/requests
 router.post('/leave/requests', async (req, res) => {
   const { leaveTypeId, startDate, endDate, days, reason } = req.body
+
+  if (!leaveTypeId || !startDate || !endDate) {
+    return res.status(400).json({ success: false, message: 'leaveTypeId, startDate and endDate are required', data: null })
+  }
+  if (new Date(endDate) < new Date(startDate)) {
+    return res.status(400).json({ success: false, message: 'endDate cannot be before startDate', data: null })
+  }
+  let numDays = Number(days)
+  if (!Number.isFinite(numDays) || numDays <= 0) {
+    const diff = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1
+    numDays = diff > 0 ? diff : null
+  }
+  if (!numDays) {
+    return res.status(400).json({ success: false, message: 'Invalid number of leave days', data: null })
+  }
+
   try {
     const empId = await getSelfEmployeeId(req)
+    if (!empId) return res.status(404).json({ success: false, message: 'Employee profile not linked', data: null })
+
+    const type = await query('SELECT id FROM leave_types WHERE id = $1', [leaveTypeId])
+    if (type.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Leave type not found', data: null })
+    }
+
+    const overlap = await query(`
+      SELECT id FROM leave_requests
+      WHERE employee_id = $1 AND status IN ('PENDING', 'APPROVED')
+        AND start_date <= $3 AND end_date >= $2
+    `, [empId, startDate, endDate])
+    if (overlap.rows.length > 0) {
+      return res.status(409).json({ success: false, message: 'You already have an overlapping leave request', data: null })
+    }
+
     const result = await query(`
       INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, days, reason, status)
       VALUES ($1, $2, $3, $4, $5, $6, 'PENDING') RETURNING *
-    `, [empId, leaveTypeId, startDate, endDate, days || 1, reason])
+    `, [empId, leaveTypeId, startDate, endDate, numDays, reason || null])
     res.status(201).json({ success: true, message: 'Leave applied', data: result.rows[0] })
   } catch (err) {
     res.status(400).json({ success: false, message: err.message, data: null })
@@ -175,8 +213,12 @@ router.post('/leave/requests', async (req, res) => {
 router.get('/leave/requests', async (req, res) => {
   try {
     const empId = await getSelfEmployeeId(req)
+    if (!empId) return res.status(404).json({ success: false, message: 'Employee profile not linked', data: null })
+
     const result = await query(`
-      SELECT r.*, t.name as "leaveTypeName"
+      SELECT r.id, r.employee_id as "employeeId", r.leave_type_id as "leaveTypeId", t.name as "leaveTypeName",
+             r.start_date as "startDate", r.end_date as "endDate", r.days, r.reason, r.status,
+             r.action_by as "actionBy", r.action_remark as "actionRemark", r.created_at as "createdAt"
       FROM leave_requests r JOIN leave_types t ON t.id = r.leave_type_id
       WHERE r.employee_id = $1 ORDER BY r.created_at DESC
     `, [empId])

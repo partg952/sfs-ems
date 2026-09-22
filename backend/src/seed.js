@@ -8,6 +8,10 @@ export async function seedDefaultUsers() {
     { username: 'hr_staff', password: 'staff123', fullName: 'HR Staff', role: 'HR_STAFF' },
     { username: 'accounts', password: 'acc123', fullName: 'Accounts User', role: 'ACCOUNTS' },
     { username: 'viewer', password: 'view123', fullName: 'Viewer', role: 'VIEWER' },
+    { username: 'hr_manager2', password: 'hr123', fullName: 'Priya Deshmukh', role: 'HR_MANAGER' },
+    { username: 'hr_staff2', password: 'staff123', fullName: 'Kiran Joshi', role: 'HR_STAFF' },
+    { username: 'accounts2', password: 'acc123', fullName: 'Nikhil Bhatt', role: 'ACCOUNTS' },
+    { username: 'viewer2', password: 'view123', fullName: 'Auditor Two', role: 'VIEWER' },
   ]
 
   for (const u of users) {
@@ -108,13 +112,23 @@ export async function seedDemoData() {
   const e4Id = e4.rows[0].id
   const e5Id = e5.rows[0].id
 
-  // 5. Seed Self-Service user for e2 (Suresh Varma)
-  const hash = await bcrypt.hash('suresh123', 10)
-  await query(`
-    INSERT INTO app_users (username, password, full_name, role, employee_id, is_active)
-    VALUES ('suresh', $1, 'Suresh Bhai Varma', 'EMPLOYEE', $2, true)
-    ON CONFLICT (username) DO NOTHING;
-  `, [hash, e2Id])
+  // 5. Seed Self-Service (Employee) users for all demo employees
+  const selfServiceUsers = [
+    { username: 'suresh', password: 'suresh123', fullName: 'Suresh Bhai Varma', employeeId: e2Id },
+    { username: 'ramesh', password: 'ramesh123', fullName: 'Ramesh Patel', employeeId: e1Id },
+    { username: 'paresh', password: 'paresh123', fullName: 'Paresh D. Parmar', employeeId: e3Id },
+    { username: 'manisha', password: 'manisha123', fullName: 'Manisha Ben Solanki', employeeId: e4Id },
+    { username: 'vikram', password: 'vikram123', fullName: 'Vikram Singh Rathore', employeeId: e5Id },
+  ]
+
+  for (const u of selfServiceUsers) {
+    const hash = await bcrypt.hash(u.password, 10)
+    await query(`
+      INSERT INTO app_users (username, password, full_name, role, employee_id, is_active)
+      VALUES ($1, $2, $3, 'EMPLOYEE', $4, true)
+      ON CONFLICT (username) DO NOTHING;
+    `, [u.username, hash, u.fullName, u.employeeId])
+  }
 
   // 6. Advances & Fines
   await query(`
@@ -170,4 +184,42 @@ export async function seedDemoData() {
   `, [e2Id, e3Id, e4Id])
 
   console.log('✅ Shreeji Facility Services demo dataset successfully initialized!')
+}
+
+export async function seedLeaveData() {
+  const typeCheck = await query('SELECT count(*) FROM leave_types')
+  if (parseInt(typeCheck.rows[0].count, 10) === 0) {
+    await query(`
+      INSERT INTO leave_types (name, annual_quota, is_paid)
+      VALUES
+        ('Casual Leave', 12, true),
+        ('Sick Leave', 8, true),
+        ('Earned Leave', 15, true),
+        ('Leave Without Pay', 0, false);
+    `)
+    console.log('🌱 Default leave types seeded (Casual, Sick, Earned, LWP).')
+  }
+
+  const types = await query('SELECT id, name FROM leave_types')
+  const paidTypes = types.rows.filter(t => t.name !== 'Leave Without Pay')
+  const employees = await query(`SELECT id FROM employees WHERE status = 'ACTIVE'`)
+  const year = new Date().getFullYear()
+
+  for (const emp of employees.rows) {
+    for (const type of paidTypes) {
+      const existing = await query(
+        'SELECT id FROM leave_balances WHERE employee_id = $1 AND leave_type_id = $2 AND year = $3',
+        [emp.id, type.id, year]
+      )
+      if (existing.rows.length === 0) {
+        const quotaRes = await query('SELECT annual_quota FROM leave_types WHERE id = $1', [type.id])
+        const quota = parseFloat(quotaRes.rows[0].annual_quota)
+        await query(`
+          INSERT INTO leave_balances (employee_id, leave_type_id, year, total_allocated, used, remaining)
+          VALUES ($1, $2, $3, $4, 0, $4)
+        `, [emp.id, type.id, year, quota])
+      }
+    }
+  }
+  console.log('🌱 Leave balances ensured for all active employees for the current year.')
 }

@@ -34,12 +34,14 @@ export default function LeavePage() {
 
   const onCreateType = async (data) => {
     try {
-      await createLeaveType({ ...data, defaultAnnualDays: Number(data.defaultAnnualDays) })
+      await createLeaveType({ ...data, annualQuota: Number(data.annualQuota), isPaid: data.isPaid !== false })
       toast.success('Leave type created')
       reset()
       setShowTypeModal(false)
       load()
-    } catch {/* handled */}
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create leave type')
+    }
   }
 
   const handleApprove = async (id) => {
@@ -47,7 +49,9 @@ export default function LeavePage() {
       await approveLeaveRequest(id)
       toast.success('Leave approved')
       load()
-    } catch {/* handled */}
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve leave request')
+    }
   }
 
   const handleReject = async (id) => {
@@ -55,7 +59,9 @@ export default function LeavePage() {
       await rejectLeaveRequest(id)
       toast.success('Leave rejected')
       load()
-    } catch {/* handled */}
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject leave request')
+    }
   }
 
   return (
@@ -141,8 +147,12 @@ export default function LeavePage() {
               <input {...register('name', { required: true })} className="input" placeholder="e.g. Casual Leave" />
             </div>
             <div>
-              <label className="label">Default Annual Days *</label>
-              <input {...register('defaultAnnualDays', { required: true })} type="number" min="0" className="input" placeholder="12" />
+              <label className="label">Annual Quota (days) *</label>
+              <input {...register('annualQuota', { required: true, min: 0 })} type="number" min="0" className="input" placeholder="12" />
+            </div>
+            <div className="flex items-center gap-2">
+              <input {...register('isPaid')} type="checkbox" defaultChecked id="isPaid" className="h-4 w-4" />
+              <label htmlFor="isPaid" className="label mb-0">Paid leave</label>
             </div>
             <div className="flex gap-3 pt-1">
               <button type="submit" disabled={isSubmitting} className="btn-primary">

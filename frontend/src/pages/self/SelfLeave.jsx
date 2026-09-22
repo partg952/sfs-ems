@@ -15,7 +15,8 @@ export default function SelfLeave() {
   const [types, setTypes] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
+  const startDateValue = watch('startDate')
 
   const load = () => {
     setLoading(true)
@@ -36,7 +37,9 @@ export default function SelfLeave() {
       reset()
       setShowModal(false)
       load()
-    } catch {/* handled */}
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit leave request')
+    }
   }
 
   if (loading) return <LoadingSpinner />
@@ -57,7 +60,7 @@ export default function SelfLeave() {
         {balances.map(b => (
           <div key={b.id} className="card p-4">
             <p className="text-xs text-brand-400">{b.leaveTypeName}</p>
-            <p className="text-xl font-semibold text-brand-900 mt-1">{b.remaining} <span className="text-sm font-normal text-brand-400">/ {b.allocated} days</span></p>
+            <p className="text-xl font-semibold text-brand-900 mt-1">{b.remaining} <span className="text-sm font-normal text-brand-400">/ {b.totalAllocated} days</span></p>
           </div>
         ))}
         {balances.length === 0 && <p className="text-sm text-brand-400">No leave balances recorded yet</p>}
@@ -119,7 +122,15 @@ export default function SelfLeave() {
               </div>
               <div>
                 <label className="label">End Date *</label>
-                <input {...register('endDate', { required: true })} type="date" className="input" />
+                <input
+                  {...register('endDate', {
+                    required: true,
+                    validate: (value) => !startDateValue || value >= startDateValue || 'End date cannot be before start date',
+                  })}
+                  type="date"
+                  className="input"
+                />
+                {errors.endDate && <p className="text-xs text-red-600 mt-1">{errors.endDate.message}</p>}
               </div>
             </div>
             <div>
